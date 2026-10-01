@@ -155,7 +155,11 @@ Besides comparing frames, `verify` audits the visible text of every beat and **f
 1920×1080 stage, text overlapping other text, and `µ`/`ß` broken by uppercase; it **warns** on text under
 18 px. When the source has exact text (code, commands, formulas, quotes), pass `--source`: Terminal lines are
 checked automatically, and any other element that must match the script verbatim gets a `data-exact`
-attribute (`<div data-exact>distancia = c × (t_llegada − t_envío)</div>`). If an overlap is intentional
+attribute (`<div data-exact>distancia = c × (t_llegada − t_envío)</div>`). `data-exact` text is compared with the
+source as prose (Markdown markers like `**`, `>`, bullets and line breaks don't count, so a sentence may span
+quote lines); Terminal lines are compared character for character. `npm run shot -- … --source=…` checks the
+same while iterating. The check is one-way: it proves stage text is in the script, not that every script fact
+reached the stage — that is the content audit's job. If an overlap is intentional
 (a glitch layer, text over its own shadow), mark that element `data-audit="off"` and say why.
 
 If a beat has an intentionally random or live layer (particles, dithering, a clock), give that beat a

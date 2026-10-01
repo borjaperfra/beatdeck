@@ -21,7 +21,7 @@
 // Needs a Chromium-family browser: Chrome, Edge, Playwright's Chromium, or $BEATDECK_BROWSER (see scripts/lib.mjs).
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { auditFrame, launchBrowser, name, settle as settleOn, sleep, startServer } from './lib.mjs';
+import { auditFrame, launchBrowser, missingFromSource, name, settle as settleOn, sleep, startServer } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const pos = args.filter((a) => !a.startsWith('--'));
@@ -92,7 +92,7 @@ for (const [s, b] of all) {
   const audit = await page.evaluate(auditFrame);
   audit.errors.forEach((e) => layout.push(`${s}.${b} ${e}`));
   audit.warnings.forEach((w) => warnings.add(w));
-  audit.exact.forEach((t) => { if (!exact.has(t)) exact.set(t, `${s}.${b}`); });
+  audit.exact.forEach((e) => { if (!exact.has(e.t)) exact.set(e.t, { ...e, at: `${s}.${b}` }); });
   const h = await hashOf();
   if (h !== `#${s}.${b}`) errors.push(`[walk] expected #${s}.${b}, got ${h}`);
 }
@@ -206,8 +206,9 @@ await cmp.screenshot({ path: `${OUT}/contact.png`, fullPage: true });
 // exact text: every Terminal line / [data-exact] element must appear verbatim in the source
 const notInSource = [];
 if (SOURCE) {
-  const src = readFileSync(SOURCE, 'utf8').replace(/\r/g, '');
-  for (const [t, at] of exact) if (!src.includes(t)) notInSource.push(`${at} ${JSON.stringify(t)} is not in ${SOURCE}`);
+  for (const e of missingFromSource([...exact.values()], readFileSync(SOURCE, 'utf8'))) {
+    notInSource.push(`${e.at} ${JSON.stringify(e.t)} is not in ${SOURCE}${e.term ? ' (terminal line: compared character for character)' : ''}`);
+  }
 }
 
 const report = { beats: all.length, backPath: back.map((p) => p.join('.')), errors, remote, mismatches, layout, notInSource, warnings: [...warnings], qr: Object.fromEntries(decoded), slowToSettle: slow, presenterConnected: connected, seconds: Math.round((Date.now() - t0) / 1000) };

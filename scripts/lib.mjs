@@ -128,7 +128,24 @@ export function auditFrame() {
   }
   res.warnings.push(...small);
   for (const el of stage.querySelectorAll('.bd-term-line, [data-exact]')) {
-    if (visible(el) && el.textContent.trim()) res.exact.push(el.textContent);
+    if (visible(el) && el.textContent.trim()) res.exact.push({ t: el.textContent, term: el.classList.contains('bd-term-line') });
   }
   return res;
+}
+
+/** Source text as prose: Markdown markers removed (quotes, bullets, headings, **bold**, `code`), whitespace collapsed. */
+export function proseOf(md) {
+  return md.replace(/\r/g, '').split('\n')
+    .map((l) => l.replace(/^\s*#{1,6}\s+/, '').replace(/^\s*(?:>\s?)+/, '').replace(/^\s*(?:[-*+]|\d+\.)\s+/, ''))
+    .join('\n').replace(/\*\*|__|`/g, '').replace(/\s+/g, ' ');
+}
+
+/**
+ * Exact-text check. Terminal lines must appear character for character in the source; [data-exact] text must
+ * appear in its prose (Markdown markers and line breaks do not count). Returns the entries that do not.
+ */
+export function missingFromSource(entries, md) {
+  const raw = md.replace(/\r/g, '');
+  const prose = proseOf(md);
+  return entries.filter(({ t, term }) => (term ? !raw.includes(t) : !prose.includes(t.replace(/\s+/g, ' ').trim())));
 }

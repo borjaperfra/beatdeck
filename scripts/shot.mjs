@@ -8,12 +8,15 @@
 // Each beat is loaded straight from its URL (?capture=1), shot once it has settled, and audited
 // (the same text checks as `npm run verify`). For the full proof, run `npm run verify`.
 import { mkdirSync } from 'node:fs';
-import { auditFrame, launchBrowser, name, settle, startServer } from './lib.mjs';
+import { readFileSync } from 'node:fs';
+import { auditFrame, launchBrowser, missingFromSource, name, settle, startServer } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const flag = (k) => args.find((a) => a.startsWith(`--${k}=`))?.split('=')[1];
 const specs = args.filter((a) => !a.startsWith('--'));
 const OUT = flag('out') ?? 'artifacts/shot';
+const SOURCE = flag('source');
+const sourceText = SOURCE ? readFileSync(SOURCE, 'utf8') : null;
 if (!specs.length) {
   console.error('usage: npm run shot -- <scene>[.<beat>] [<from>-<to>] … [--mode=<example>] [--dist=<dir>] [--out=<dir>]');
   process.exit(1);
@@ -57,7 +60,8 @@ for (const [s, b] of wanted) {
   await settle(page);
   const file = `${OUT}/${name(s, b)}.png`;
   await page.screenshot({ path: file });
-  const { errors: issues, warnings } = await page.evaluate(auditFrame);
+  const { errors: found, warnings, exact } = await page.evaluate(auditFrame);
+  const issues = [...found, ...(sourceText ? missingFromSource(exact, sourceText).map((e) => `${JSON.stringify(e.t)} is not in ${SOURCE}`) : [])];
   problems += issues.length;
   console.log(`${issues.length ? '✕' : '✓'} ${s}.${b} → ${file}`);
   issues.forEach((i) => console.log('    ' + i));
