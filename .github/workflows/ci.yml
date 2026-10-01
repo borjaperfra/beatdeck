@@ -1,0 +1,81 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  demo:
+    name: demo · build + verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - run: npm run verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: verify-demo, path: artifacts/verify, retention-days: 7 }
+
+  kernel-panic:
+    name: showcase · build + verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build:kernel-panic
+      - run: npm run verify:kernel-panic
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: verify-kernel-panic, path: artifacts/verify-kernel-panic, retention-days: 7 }
+
+  scaffold:
+    name: degit → init → build → upgrade
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: a fresh talk, as a new user gets it
+        run: |
+          talk="$RUNNER_TEMP/talk"; mkdir -p "$talk"
+          git archive HEAD | tar -x -C "$talk"
+          cd "$talk"
+          node scripts/init.mjs --title "CI talk" --author "CI" --lang en --theme light
+          test ! -e examples && test ! -e .claude-plugin && test -f .beatdeck.json
+          grep -q "qrUrl: 'TODO'" deck/deck.config.ts
+          ln -s "$GITHUB_WORKSPACE/node_modules" node_modules
+          npm run build
+          node scripts/upgrade.mjs --from "$GITHUB_WORKSPACE" --dry-run
+
+  pages:
+    name: publish demo to GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [demo, kernel-panic, scaffold]
+    runs-on: ubuntu-latest
+    permissions: { pages: write, id-token: write }
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build && npm run build:kernel-panic
+      - run: mkdir site && cp -r dist/. site/ && cp -r dist-kernel-panic site/kernel-panic
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+      - id: deploy
+        uses: actions/deploy-pages@v4

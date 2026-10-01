@@ -4,5 +4,5 @@
  */
 export const TERM = {
   build: ['$ npm run build', '✓ offline check: dist has no remote references'],
-  verify: ['$ npm run verify', '✓ verify · 22 beats walked, 21 walked back, 22 reloaded from the URL · 172s'],
+  verify: ['$ npm run verify', '✓ verify · 22 beats walked, 21 walked back, 22 reloaded from the URL · 132s'],
 } as const;

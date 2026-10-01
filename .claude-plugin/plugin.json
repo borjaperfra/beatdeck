@@ -1,7 +1,7 @@
 {
   "name": "beatdeck",
   "displayName": "beatdeck",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Build talks as beats, not slides: a fixed 1920x1080 React stage where one click is one beat, with authored motion, presenter view and an offline build.",
   "author": {
     "name": "Borja Pérez Francés",

@@ -1,5 +1,10 @@
 # beatdeck
 
+[![ci](https://github.com/borjaperfra/beatdeck/actions/workflows/ci.yml/badge.svg)](https://github.com/borjaperfra/beatdeck/actions/workflows/ci.yml)
+
+**Try it:** [the demo deck](https://borjaperfra.github.io/beatdeck/) · [the Kernel Panic showcase](https://borjaperfra.github.io/beatdeck/kernel-panic/)
+— click or → to advance, O for the overview, P for the presenter window.
+
 **Talks as beats, not slides.** A fixed 1920×1080 React stage where one click is one beat. Motion is
 authored, the state is `{ scene, beat }`, every beat rebuilds from the URL, and the build runs with Wi-Fi off.
 It comes with a presenter window, an overview and a debug panel, plus a Claude Code skill that writes the talk
