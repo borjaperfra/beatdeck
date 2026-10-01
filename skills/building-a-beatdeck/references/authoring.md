@@ -8,7 +8,7 @@ deck/
   scenes.ts          the beat map (SceneDef[])
   timeline.ts        Live type, initialLive, timeline — automatic beats only
   index.tsx          defineDeck + Stage (layer order) + theme import
-  deck.css           deck-only keyframes
+  deck.css           optional: deck-only styles/keyframes (create it and import it from index.tsx)
   scenes/NN-Name.tsx one file per scene layer
   assets/            images, logos, data (imported, so Vite fingerprints and bundles them)
 ```

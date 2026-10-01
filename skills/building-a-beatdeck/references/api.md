@@ -33,7 +33,8 @@ export default defineDeck<Live>({
 
 ```ts
 interface SceneDef { id: string; title: string; beats: BeatDef[] }
-interface BeatDef  { name: string; auto?: boolean; ref?: string; source?: string; note?: string }
+interface BeatDef  { name: string; auto?: boolean; ref?: string; source?: string; note?: string;
+                     tolerance?: number }   // verify: % px allowed to differ (random/live layers only)
 interface Position { scene: number; beat: number }            // 0-based
 interface DeckState<L> extends Position { live: L; entry: number; from: Position | null; blackout: boolean }
 interface TimelineHost<L> {
@@ -65,13 +66,13 @@ interface TimelineHost<L> {
 | Export | Use |
 | --- | --- |
 | `Reveal({ on, out?, x?, y?, delay?, ms?, rise? })` | Element that belongs to some beats. Leaves up if `out` (story moved past it), down otherwise. |
-| `CountUp({ value, from?, entry?, ms?, delay?, prefix?, suffix? })` | Number that tweens to `value`; with `from` + `entry` it restarts on every beat entry. Tabular figures. |
-| `Typewriter({ lines, run, entry?, charMs?, delay? })` | Types text with an accent bar cursor without reflowing anything around it. |
+| `CountUp({ value, from?, entry?, ms?, delay?, ease?, decimals?, locale?, prefix?, suffix? })` | Number that tweens to `value`; with `from` + `entry` it restarts on every beat entry. Tabular figures. `ease` is a GSAP ease (default `power2.out`). `decimals` fixes fraction digits; `locale` (e.g. `'es-ES'`) formats with its separators (`20.200`, `3,9`) — without it, plain digits. |
+| `Typewriter({ lines, run, entry?, charMs?, delay?, cursorAfter?, lineStyle?, cursorColor? })` | Types text with an accent bar cursor without reflowing anything around it. Restarts whenever `run` becomes true or `entry` changes; with `run` false the text is shown complete. `cursorAfter` = ms the cursor stays after typing (default 1400); `lineStyle` styles each line; `cursorColor` defaults to `var(--accent)`. |
 | `QR({ url, size, x?, y? })` | QR computed locally from the URL (white plate, quiet zone). Nothing while `url` is 'TODO'. |
 | `DefaultChrome` | Title // scene id top-left, one tick per beat at the bottom. |
 | `Terminal({ lines, size?, prompt?, x?, y?, framed? })` | Real commands and output, character-exact (`white-space: pre`, tabs kept). A line is a string or `{ t, on?, dim?, marks?, labels? }`; hidden lines keep their height. `marks: [{ text, nth?, on?, label?, row? }]` underline + recolour a substring and hang a label under it without changing the text. Lines starting with `prompt` (default `"$ "`) render as commands. |
-| `NodeBox({ rect, on, kind?, value?, tone?, delay? })` | Diagram node: hairline box, small `kind`, value (or children). `tone`: `normal` · `hot` (accent, the point of the beat) · `dim` · `ghost` (dashed). |
-| `Arrow({ from, to, on, tone?, head?, flow?, label?, lx?, ly?, delay? })` | Connector between two `Rect`s (or points), clipped to their borders, drawn on entry; optional arrowhead, label and dashed flow. One SVG layer per arrow, so it composes with HTML nodes. `rectExit(rect, x, y)` exposes the clipping maths. |
+| `NodeBox({ rect, on, kind?, value?, tone?, delay?, style? })` | Diagram node: hairline box, small `kind`, value (or children). `tone`: `normal` · `hot` (accent, the point of the beat) · `dim` · `ghost` (dashed). The box is mono, 28 px, `nowrap`: size `rect` for its text, or pass a styled element as `value` (e.g. sans for prose). |
+| `Arrow({ from, to, on, tone?, head?, flow?, label?, lx?, ly?, labelAnchor?, delay?, gap? })` | Connector between two `Rect`s (or points), clipped to their borders, drawn on entry; optional arrowhead, label and dashed flow. One SVG layer per arrow, so it composes with HTML nodes. `labelAnchor` (`start` · `middle` · `end`) aligns the label at the midpoint + (`lx`, `ly`); `gap` = px kept free from each border (default 8). `rectExit(rect, x, y)` exposes the clipping maths. |
 
 ## Motion constants
 
@@ -92,7 +93,8 @@ Keep source text in one module (e.g. `deck/terminal.ts`) copied character for ch
 
 ## CSS
 
-Base classes: `.layer` (absolute, full stage, no pointer events), `.mono`, `.cursor` (blinking).
+Base classes: `.layer` (absolute, full stage, no pointer events), `.mono`, `.cursor` (blinking), `.keep-case`
+(opts out of `text-transform: uppercase`, for `µs`, `ß`).
 Theme roles (neutral): `.t-statement`, `.t-editorial`, `.t-numeral`, `.t-meta`, `.t-eyebrow`.
 Tokens: `--bg --surface --ink --ink-2 --ink-3 --hair --hair-strong --accent --accent-strong --ok --warning
 --fault --font-sans --font-mono --ease`, plus `--op-accent --op-accent-strong` for operator UI.
