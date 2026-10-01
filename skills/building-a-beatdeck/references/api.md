@@ -69,11 +69,26 @@ interface TimelineHost<L> {
 | `Typewriter({ lines, run, entry?, charMs?, delay? })` | Types text with an accent bar cursor without reflowing anything around it. |
 | `QR({ url, size, x?, y? })` | QR computed locally from the URL (white plate, quiet zone). Nothing while `url` is 'TODO'. |
 | `DefaultChrome` | Title // scene id top-left, one tick per beat at the bottom. |
+| `Terminal({ lines, size?, prompt?, x?, y?, framed? })` | Real commands and output, character-exact (`white-space: pre`, tabs kept). A line is a string or `{ t, on?, dim?, marks?, labels? }`; hidden lines keep their height. `marks: [{ text, nth?, on?, label?, row? }]` underline + recolour a substring and hang a label under it without changing the text. Lines starting with `prompt` (default `"$ "`) render as commands. |
+| `NodeBox({ rect, on, kind?, value?, tone?, delay? })` | Diagram node: hairline box, small `kind`, value (or children). `tone`: `normal` · `hot` (accent, the point of the beat) · `dim` · `ghost` (dashed). |
+| `Arrow({ from, to, on, tone?, head?, flow?, label?, lx?, ly?, delay? })` | Connector between two `Rect`s (or points), clipped to their borders, drawn on entry; optional arrowhead, label and dashed flow. One SVG layer per arrow, so it composes with HTML nodes. `rectExit(rect, x, y)` exposes the clipping maths. |
 
 ## Motion constants
 
 `EASE` (cubic-bezier(.22,1,.36,1)), `OUT_MS` 320, `IN_DELAY` 340,
 `swap(on, inMs?, extraDelay?, props?)` → transition string, `layerFade(on)` → scene layer transition.
+
+Terminal example — show output exactly as the source has it, highlight what the beat is about:
+
+```tsx
+<Terminal x={150} y={140} size={30} lines={[
+  '$ git hash-object hola.txt',
+  { t: '5c1b14949828006ed75a3e8858957f86a2f7e2eb', marks: [{ text: '5c1b149', on: b >= 1, label: 'short hash' }], labels: 1 },
+  { t: '$ git add hola.txt', on: b >= 2 },
+]} />
+```
+
+Keep source text in one module (e.g. `deck/terminal.ts`) copied character for character, and never retype it in scenes.
 
 ## CSS
 

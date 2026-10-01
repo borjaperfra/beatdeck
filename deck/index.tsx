@@ -1,6 +1,5 @@
 import { defineDeck } from 'beatdeck';
 import '../themes/neutral.css';
-import './deck.css';
 import { config } from './deck.config';
 import { SCENES } from './scenes';
 import { initialLive, timeline, type Live } from './timeline';

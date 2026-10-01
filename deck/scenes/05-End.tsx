@@ -1,4 +1,4 @@
-import { QR, Reveal, Scene, useScene } from 'beatdeck';
+import { QR, Reveal, Scene, Terminal, useScene } from 'beatdeck';
 import { config } from '../deck.config';
 
 function End_() {
@@ -12,9 +12,7 @@ function End_() {
         <div className="t-statement" style={{ fontSize: 150 }}>Your talk,<br />in beats.</div>
       </Reveal>
       <Reveal on={make} out={qa} x={160} y={700} delay={250}>
-        <div className="mono" style={{ fontSize: 30, padding: '22px 30px', border: '1px solid var(--hair-strong)', whiteSpace: 'nowrap' }}>
-          <span style={{ color: 'var(--accent)' }}>$</span> {config.scaffold}
-        </div>
+        <Terminal framed size={30} lines={[`$ ${config.scaffold}`]} />
       </Reveal>
 
       <Reveal on={qa} x={160} y={380}>

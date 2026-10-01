@@ -1,0 +1,42 @@
+/* Built-in components: Terminal, NodeBox, Arrow. They read the theme tokens. */
+
+/* Terminal — exact text, monospaced, tabs preserved */
+.bd-term { font-family: var(--font-mono); line-height: 1.5; color: var(--ink); font-weight: 450; }
+.bd-term.framed { border: 1px solid var(--hair-strong); padding: 0.8em 1em; }
+.bd-term-line { white-space: pre; tab-size: 4; min-height: 1.5em; transition: opacity 500ms var(--ease) 340ms, color 400ms; }
+.bd-term-line.cmd { font-weight: 600; }
+.bd-term-line.dim { color: var(--ink-3); }
+.bd-prompt { color: var(--accent); font-weight: 600; }
+.bd-mk { position: relative; transition: color 400ms; }
+.bd-mk::before {
+  content: ''; position: absolute; left: 0.1em; right: 0.1em; bottom: -0.14em; height: 3px; background: var(--accent);
+  transform: scaleX(0); transform-origin: left; transition: transform 250ms;
+}
+.bd-mk.on { color: var(--accent); }
+.bd-mk.on::before { transform: none; transition: transform 600ms var(--ease) 340ms; }
+.bd-mk::after {
+  content: attr(data-label); position: absolute; left: 0.1em; top: calc(100% + 0.35em); white-space: nowrap;
+  font-size: max(18px, 0.6em); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); line-height: 1;
+  opacity: 0; transform: translateY(-6px); transition: opacity 250ms, transform 250ms;
+}
+.bd-mk.r1::after { top: calc(100% + 1.45em); }
+.bd-mk.on::after { opacity: 1; transform: none; transition: opacity 500ms var(--ease) 500ms, transform 700ms var(--ease) 500ms; }
+
+/* Diagram — nodes and arrows */
+.bd-node {
+  position: absolute; display: flex; flex-direction: column; justify-content: center; padding: 0 22px;
+  background: var(--bg); font-family: var(--font-mono); white-space: nowrap; color: var(--ink);
+  border: 2px solid var(--ink-2);
+}
+.bd-node.hot { border: 3px solid var(--accent); }
+.bd-node.dim { border-color: var(--ink-3); color: var(--ink-3); }
+.bd-node.ghost { border: 2px dashed var(--ink-3); color: var(--ink-3); }
+.bd-node-kind { font-size: 18px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 4px; transition: color 400ms; }
+.bd-node.hot .bd-node-kind { color: var(--accent); }
+.bd-node.dim .bd-node-kind, .bd-node.ghost .bd-node-kind { color: var(--ink-3); }
+.bd-node-value { font-size: 28px; font-weight: 600; }
+.bd-arrow-label { font-family: var(--font-mono); font-size: 20px; font-weight: 500; paint-order: stroke; stroke: var(--bg); stroke-width: 10px; stroke-linejoin: round; }
+
+.bd-flow { stroke-dasharray: 3 21; animation: bd-flow 1.4s linear infinite; }
+@keyframes bd-flow { to { stroke-dashoffset: -24; } }
+.reduced-motion .bd-flow, .capture .bd-flow { animation: none; }

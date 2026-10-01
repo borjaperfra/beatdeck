@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles/stage.css';
 import './styles/operator.css';
+import './styles/components.css';
 import { flags, reducedMotion } from './flags';
 import { createEngine } from './engine';
 import type { DeckDefinition } from './types';
