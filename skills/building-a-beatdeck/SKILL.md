@@ -48,7 +48,13 @@ target URL, real screenshots/logos/photos. Put originals in `reference/` (read-o
   every slide's text, speaker notes and media, plus the media files. (Inside a scaffolded project the skill
   folder is `skills/building-a-beatdeck/`.)
 - **PDF / Keynote**: export to PDF and read it page by page; ask for the original images.
-- **Notes / Markdown / an outline**: use as is.
+- **A written script (Markdown, a doc, notes)**: use as is, and read it by kind of content:
+  - **narration** (prose, `>` quotes: what the speaker *says*) → the presenter view (`source` / `note`). On
+    stage it becomes a short statement in the speaker's own words — condensed, never reworded into new claims;
+  - **facts** (bullets, figures, names) → on stage, exactly as written (same numbers, same rounding, same "~");
+  - **code blocks, commands, formulas, output** → on stage character for character (`Terminal`, or a
+    `data-exact` element — see step 6), never retyped from memory;
+  - **stage directions** ("on screen…", "show how it grows…") → instructions for you, not text to display.
 
 Real artefacts beat redraws: if the source shows a tweet, a logo, a product photo or a meme, use the real file.
 Never invent quotes, numbers, tweet text, URLs or logos. Missing facts become explicit `TODO`s and questions.
@@ -63,7 +69,8 @@ that carry it, what is kept, restored or deliberately cut, and open questions. T
 
 Turn the audit into `deck/scenes.ts` (`SceneDef[]`). Rules (details in `references/beat-model.md`):
 
-- A **scene** is a mode of the talk (a stage world), not a slide title. 5–9 scenes is typical.
+- A **scene** is a mode of the talk (a stage world), not a slide title. 5–9 scenes is typical; keys 1–9 jump
+  to scenes, so more than 9 leaves the rest reachable only by stepping or the overview (O).
 - A **beat** is one idea landing. If two things must appear on separate clicks, they are two beats.
 - `auto: true` marks a beat whose motion runs by itself and takes noticeable time (a boot sequence, a counter,
   a cascade of warnings, a typed command). The presenter flags it and `verify` waits for it. Everything else
