@@ -29,9 +29,22 @@ jumping and refreshing safe on stage.
 - A scene with one beat is fine. A scene with 12 beats probably hides two scenes.
 - Name beats after what happens ("strike pages", "server_02"), not "beat 3".
 
+## `entry`
+
+`entry` is a global counter: +1 on every beat entry anywhere in the deck (also re-entering the same beat).
+It is the restart signal for local animations (`CountUp`, `Typewriter`, a GSAP tween in `useLayoutEffect`).
+Because every layer stays mounted, an animation keyed only on `entry` also replays while invisible — harmless
+but wasteful; gate it with `run={here && b === k}` (Typewriter) or only animate when `here`.
+
 ## Automatic beats
 
-Use `auto: true` + a timeline when motion must happen *by itself* inside a beat:
+Mark a beat `auto: true` when motion happens *by itself* inside it and takes noticeable time. Implement it
+the lighter way that works:
+
+- **Self-contained**: the motion lives in one component and restarts on entry (`Typewriter` with
+  `run={here && b === k}`, `CountUp` with `from` + `entry`). No `Live`, no timeline.
+- **State-driven**: other layers react to its progress, a later beat depends on it, it cuts or advances by
+  itself → a `Live` field, `initialLive`, and `timeline`:
 
 - a boot log / typed command, then `host.autoGo` to the title;
 - a counter or a simulation that grows (users 25 → 100);

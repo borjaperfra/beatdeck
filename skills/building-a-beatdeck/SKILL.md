@@ -11,6 +11,10 @@ fixed 1920×1080 canvas scaled into any screen with black letterbox. Everything 
 
 Your job is to turn what the speaker wants to say into beats that feel authored — not to reproduce slides.
 
+**Paths.** `references/…` and `scripts/…` below are relative to the folder of this SKILL.md, wherever the skill
+is installed (plugin, `~/.claude/skills/`, or `skills/building-a-beatdeck/` inside a deck project). Everything
+else (`deck/`, `src/`, `npm run …`) is relative to the deck project.
+
 ## 0 · Get a deck repo
 
 If the working directory has no `src/beatdeck/`, scaffold one, clean it and install:
@@ -37,9 +41,9 @@ generically there and say so.
 Ask for (or find) the source material and the facts you must not guess: title, speaker, event, date, the QR
 target URL, real screenshots/logos/photos. Put originals in `reference/` (read-only from then on).
 
-- **PPTX**: `python skills/building-a-beatdeck/scripts/extract_pptx.py deck.pptx reference/source` → one
-  Markdown file with every slide's text, speaker notes and media, plus the media files.
-  (If the skill is installed outside the repo, the script sits next to this SKILL.md.)
+- **PPTX**: `python <skill folder>/scripts/extract_pptx.py deck.pptx reference/source` → one Markdown file with
+  every slide's text, speaker notes and media, plus the media files. (Inside a scaffolded project the skill
+  folder is `skills/building-a-beatdeck/`.)
 - **PDF / Keynote**: export to PDF and read it page by page; ask for the original images.
 - **Notes / Markdown / an outline**: use as is.
 
@@ -58,16 +62,23 @@ Turn the audit into `deck/scenes.ts` (`SceneDef[]`). Rules (details in `referenc
 
 - A **scene** is a mode of the talk (a stage world), not a slide title. 5–9 scenes is typical.
 - A **beat** is one idea landing. If two things must appear on separate clicks, they are two beats.
-- `auto: true` only where motion must run by itself inside the beat (a boot sequence, a counter, a cascade of
-  warnings). Everything else waits for the click.
+- `auto: true` marks a beat whose motion runs by itself and takes noticeable time (a boot sequence, a counter,
+  a cascade of warnings, a typed command). The presenter flags it and `verify` waits for it. Everything else
+  waits for the click. Two ways to implement it — pick the lighter:
+  - **self-contained** (a `Typewriter`, a `CountUp` that restarts on entry): no `timeline` needed;
+  - **state-driven** (other layers react to its progress, a later beat depends on it, or it advances by itself):
+    a `Live` field + `initialLive` + `timeline` in `deck/timeline.ts`. See `references/beat-model.md`.
 - Fill `ref` (where it comes from), `source` (what the source says) and `note` (speaker cue) — the presenter
   view shows them; the audience never does.
-- Keep the first scene's first beat as a calm standby screen: the talk starts on the first click.
+- Keep the first scene's first beat as a calm standby screen: the talk starts on the first click. On a dark
+  theme it can be pure black (`isBlack`); on a light theme use the theme background — anything drawn on a
+  forced-black standby must not use theme ink colours.
 
 ## 4 · Visual direction
 
 Default to the neutral theme (`themes/neutral.css`): near-black stage, off-white type, one accent, hairlines,
-huge editorial type, negative space. If the speaker has a brand, change tokens (`--accent`, fonts, `--bg`) in a
+huge editorial type, negative space. Bright room, daylight or a stream → `themes/light.css` on top of it
+(`init --theme light` does this). If the speaker has a brand, change tokens (`--accent`, fonts, `--bg`) in a
 theme file — do not invent a new art direction, decorative labels, stickers, gradients, rounded cards or a
 dashboard look. If a design reference exists (Figma, a v3 HTML prototype, a brand book), it decides *how it
 looks and moves*; the source decides *what is said*. Record conflicts in the audit.
@@ -100,6 +111,13 @@ export const Idea = () => <Scene index={1}><Idea_ /></Scene>;
 - What leaves goes first and fast; what arrives starts once the space is free (`swap`, `Reveal`, `layerFade`).
 - Automatic motion goes in `deck/timeline.ts`: `initialLive(pos)` gives every beat a complete start state,
   `timeline(pos, host)` schedules changes with `host.at(ms, …)`, `host.setLive`, `host.autoGo`.
+- `entry` increments on **every** beat change anywhere in the deck. Use it to restart a local animation, and
+  gate the animation with `here && b === k` so always-mounted components do not replay invisibly.
+- Built-ins before custom code: `Terminal` for commands and output (character-exact, with marks and labels),
+  `NodeBox` + `Arrow` for diagrams, `CountUp`, `Typewriter`, `QR`. Build your own only when these cannot do it,
+  and if it is generic, propose it for the engine.
+- Text that must be exact (terminal output, quotes, code) lives in one module (e.g. `deck/terminal.ts`) copied
+  character for character from the source; scenes import it, never retype it.
 - Register every layer in `Stage` in `deck/index.tsx`, back to front.
 
 Work scene by scene: write it, `npm run dev`, open `http://127.0.0.1:5173/#3.1`, step through with →/←.
@@ -110,6 +128,9 @@ Work scene by scene: write it, `npm run dev`, open `http://127.0.0.1:5173/#3.1`,
 npm run build          # typecheck + bundle + offline check (fails on any remote URL)
 npm run verify         # forwards, backwards and from the URL; frames compared; QR decoded; presenter
 ```
+
+If a beat has an intentionally random or live layer (particles, dithering, a clock), give that beat a
+`tolerance` (% of pixels) in `scenes.ts` and say why. Never raise tolerances to silence a real mismatch.
 
 `verify` writes `artifacts/verify/contact.png` (every beat) plus `walk-`, `back-` and `direct-SS-BB.png`. Open
 the contact sheet and the frames that matter, and check against `references/checklist.md`: no overlaps or

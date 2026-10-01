@@ -63,8 +63,12 @@ function Idea_() {
 export const Idea = () => <Scene index={1}><Idea_ /></Scene>;
 ```
 
-The demo in `deck/` (5 scenes, 19 beats) uses every pattern: an automatic boot, a strike-through, a diagram
-built node by node, a self-counting number, and a locally generated QR code. Replace it with your talk.
+Built in: `Reveal`, `Scene`, `CountUp`, `Typewriter`, `Terminal` (real commands and output, character-exact,
+with highlights and labels), `NodeBox` + `Arrow` (diagrams that draw themselves), `QR` (computed locally).
+
+The demo in `deck/` (6 scenes, 22 beats) uses every pattern: an automatic boot, a strike-through, a diagram
+built node by node, terminal output with highlights, a self-counting number, and a locally generated QR code.
+Replace it with your talk.
 
 ## Commands
 
