@@ -31,8 +31,10 @@ Use `--theme light` when the room is bright or the talk is streamed. Run it once
 It also resets the demo's `qrUrl` to `TODO` and clears its tagline: set the real QR target only from the source.
 
 Then read `AGENTS.md` (repo rules) and skim `deck/` — the demo deck is the reference implementation of every
-pattern below. For a heavier reference, the beatdeck repo on GitHub has `examples/kernel-panic/`, a 47-beat
-production talk (particles, an SVG architecture that spans scenes, a 520 ms panic cut to black).
+pattern below. `init` removes the heavier example from your project; read it on GitHub when you need it:
+https://github.com/borjaperfra/beatdeck/tree/main/examples/kernel-panic — a 47-beat production talk. Look at
+`index.tsx` (custom chrome, `isCut` + `Overlay` for a cut to black), `deck/timeline.ts` (every kind of automatic
+beat), `architecture/` (one SVG world spanning several scenes) and `simulation/` (a Canvas 2D particle layer).
 
 The talk lives in `deck/`. Never edit `src/beatdeck/` for one talk; if the engine truly lacks something, add it
 generically there and say so.

@@ -27,7 +27,8 @@ export default defineDeck<Live>({
 });
 ```
 
-`src/main.tsx` mounts it: `mount(deck)`. `vite --mode <name>` mounts `examples/<name>/index.tsx` instead.
+`src/main.tsx` mounts it: `mount(deck)`. `vite --mode <name>` mounts `examples/<name>/index.tsx` instead (only in the beatdeck repo itself: `init`
+removes `examples/` from a talk project).
 
 ## Types
 

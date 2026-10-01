@@ -3,7 +3,7 @@
 //   npm run shot -- 4.3 7.6        → artifacts/shot/04-03.png, artifacts/shot/07-06.png
 //   npm run shot -- 3              → every beat of scene 3
 //   npm run shot -- 2.1-2.4        → a range
-//   npm run shot -- 4.3 --mode=kernel-panic   (an example)   --dist=dist (a build instead of the dev server)
+//   npm run shot -- 4.3 --mode=kernel-panic   (an example, beatdeck repo only)   --dist=dist (a build instead of the dev server)
 //
 // Each beat is loaded straight from its URL (?capture=1), shot once it has settled, and audited
 // (the same text checks as `npm run verify`). For the full proof, run `npm run verify`.
