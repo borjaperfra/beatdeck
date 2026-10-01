@@ -1,0 +1,22 @@
+# Builds the talk and verifies every beat on each push. Managed by beatdeck (`npm run upgrade` updates it
+# unless you edited it).
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - run: npm run verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: verify, path: artifacts/verify, retention-days: 7 }

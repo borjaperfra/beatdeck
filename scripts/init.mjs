@@ -2,13 +2,14 @@
 // Turns a fresh copy of the beatdeck repo into a clean talk project. Run once, right after degit:
 //
 //   npx degit borjaperfra/beatdeck my-talk && cd my-talk
-//   npm run init -- --title "My talk" --author "Ada Lovelace" --lang en --theme light
+//   npm run init -- --title "My talk" --author "Ada Lovelace" --lang en --theme light [--demo]
 //
 // Removes what belongs to the beatdeck repo, not to a talk (the Kernel Panic showcase and its non-MIT assets,
 // the plugin marketplace files, beatdeck's README and screenshots, the example scripts), renames the package,
-// and writes title / author / lang / theme into the deck. The demo deck in deck/ stays as a working starting
-// point. Deletes itself when done. All flags are optional.
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+// and writes title / author / lang / theme into the deck. deck/ becomes a blank two-scene starter (title,
+// questions); --demo keeps beatdeck's demo deck instead. Creates reference/ and docs/CONTENT-AUDIT.md +
+// docs/RUNBOOK.md from the skill's templates. Deletes itself when done. All flags are optional.
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { forTalk, writeManifest } from './upgrade.mjs';
@@ -35,12 +36,44 @@ const title = arg('title', null);
 const author = arg('author', null);
 const lang = arg('lang', null);
 const theme = arg('theme', 'neutral');
+const demo = argv.includes('--demo');
 const name = slug(arg('name', title ?? basename(root)));
 const esc = (s) => s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+// fs.cpSync on directories fails with EIO on Windows paths with non-ASCII characters (Node 24): copy by hand
+const copyDir = (from, to) => {
+  mkdirSync(to, { recursive: true });
+  for (const f of readdirSync(from)) {
+    const a = resolve(from, f), z = resolve(to, f);
+    if (statSync(a).isDirectory()) copyDir(a, z); else copyFileSync(a, z);
+  }
+};
 const edit = (f, fn) => { if (existsSync(p(f))) writeFileSync(p(f), fn(readFileSync(p(f), 'utf8'))); };
 
 // 1 · what belongs to the beatdeck repo, not to a talk
-for (const f of ['examples', '.claude-plugin', 'docs/media', 'README.md']) rmSync(p(f), { recursive: true, force: true });
+// (templates/ is read below, then removed at the end)
+for (const f of ['examples', '.claude-plugin', 'docs/media', 'README.md', 'CHANGELOG.md', '.github/workflows/ci.yml']) rmSync(p(f), { recursive: true, force: true });
+
+// 1b · the deck: a blank two-scene starter (title, questions) unless --demo keeps beatdeck's demo
+if (!demo) {
+  // rename first: on Windows a directory deleted and recreated at once can fail with EIO
+  const old = p(`.deck-demo-${process.pid}`);
+  renameSync(p('deck'), old);
+  copyDir(p('templates/blank/deck'), p('deck'));
+  rmSync(old, { recursive: true, force: true });
+}
+mkdirSync(p('reference'), { recursive: true });
+if (!existsSync(p('reference/README.md'))) {
+  writeFileSync(p('reference/README.md'), `# Source material
+
+The talk's source goes here, read-only once collected: the script or slides, real screenshots, logos,
+photos. \`docs/CONTENT-AUDIT.md\` maps every part of it to the beats that carry it.
+`);
+}
+mkdirSync(p('docs'), { recursive: true });
+for (const [doc, tpl] of [['CONTENT-AUDIT.md', 'content-audit-template.md'], ['RUNBOOK.md', 'runbook-template.md']]) {
+  const src = p(`skills/building-a-beatdeck/references/${tpl}`);
+  if (!existsSync(p(`docs/${doc}`)) && existsSync(src)) writeFileSync(p(`docs/${doc}`), readFileSync(src, 'utf8').replace(/<talk title>/g, title ?? name));
+}
 
 // 2 · package.json: own name, no example scripts, no init
 const pkg = JSON.parse(readFileSync(p('package.json'), 'utf8'));
@@ -58,7 +91,9 @@ edit('package-lock.json', (s) => s.replace(/("name":\s*)"beatdeck"/g, `$1"${name
 // 3 · tsconfig / licence / agent guide: no references to the showcase
 edit('tsconfig.json', (s) => forTalk('tsconfig.json', s));
 edit('LICENSE', (s) => s.replace(/\n\nThe MIT license covers[\s\S]*$/, '\n'));
-edit('AGENTS.md', (s) => forTalk('AGENTS.md', s));
+copyFileSync(p('templates/talk/AGENTS.md'), p('AGENTS.md'));
+mkdirSync(p('.github/workflows'), { recursive: true });
+copyFileSync(p('templates/talk/ci.yml'), p('.github/workflows/verify.yml'));
 
 // 4 · the deck: title, author, lang, id, theme
 if (title) edit('deck/deck.config.ts', (s) => s.replace(/title: '[^']*'/, `title: '${esc(title)}'`));
@@ -97,6 +132,7 @@ npm run upgrade      # bring the engine up to date (never touches deck/)
 The talk lives in \`deck/\`. See \`AGENTS.md\` and \`skills/building-a-beatdeck/SKILL.md\`.
 `);
 
+rmSync(p('templates'), { recursive: true, force: true });
 rmSync(p('scripts/init.mjs'), { force: true });
 writeManifest(root, beatdeckVersion, 'init'); // lets `npm run upgrade` tell your edits from beatdeck's files
-console.log(`✓ ${name}: clean talk project${title ? ` "${title}"` : ''}${theme === 'light' ? ', light theme' : ''}. qrUrl is TODO in deck/deck.config.ts. Next: npm install && npm run dev`);
+console.log(`✓ ${name}: clean talk project${title ? ` "${title}"` : ''}${theme === 'light' ? ', light theme' : ''}${demo ? ', with the demo deck' : ', blank deck'}. qrUrl is TODO in deck/deck.config.ts. Next: npm install && npm run dev`);

@@ -20,5 +20,5 @@
       "@deck": ["deck/index.tsx"]
     }
   },
-  "include": ["src", "deck", "examples", "vite.config.ts"]
+  "include": ["src", "deck", "examples", "templates", "vite.config.ts"]
 }

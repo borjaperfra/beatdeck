@@ -55,9 +55,21 @@ jobs:
           node scripts/init.mjs --title "CI talk" --author "CI" --lang en --theme light
           test ! -e examples && test ! -e .claude-plugin && test -f .beatdeck.json
           grep -q "qrUrl: 'TODO'" deck/deck.config.ts
+          test -f reference/README.md && test -f docs/CONTENT-AUDIT.md && test -f .github/workflows/verify.yml
+          test ! -e CHANGELOG.md && test ! -e templates && test ! -e .github/workflows/ci.yml
           ln -s "$GITHUB_WORKSPACE/node_modules" node_modules
           npm run build
+          npm run verify
           node scripts/upgrade.mjs --from "$GITHUB_WORKSPACE" --dry-run
+      - name: a fresh talk with the demo deck
+        run: |
+          talk="$RUNNER_TEMP/demo-talk"; mkdir -p "$talk"
+          git archive HEAD | tar -x -C "$talk"
+          cd "$talk"
+          node scripts/init.mjs --title "CI demo" --demo
+          grep -q "PROOF" deck/scenes.ts
+          ln -s "$GITHUB_WORKSPACE/node_modules" node_modules
+          npm run build
 
   pages:
     name: publish demo to GitHub Pages

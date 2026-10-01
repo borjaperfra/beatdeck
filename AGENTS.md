@@ -1,6 +1,7 @@
 # beatdeck — agent guide
 
-This repo is a talk engine plus one talk. If you are building or editing a presentation here, follow the skill
+This repo is the beatdeck engine, a demo talk (`deck/`) and a showcase. Talk projects made from it get their
+own AGENTS.md (`templates/talk/AGENTS.md`). If you are building or editing a presentation here, follow the skill
 in `skills/building-a-beatdeck/SKILL.md` — it is the full workflow (source → content audit → beat map → scenes →
 verification). This file is the short version.
 
@@ -13,6 +14,7 @@ verification). This file is the short version.
 | `src/beatdeck/` | the engine (state, navigation, presenter, overview, debug, stage) | only for generic changes |
 | `examples/kernel-panic/` | a full 47-beat production talk, reference only | no |
 | `skills/building-a-beatdeck/` | the skill + references + `extract_pptx.py` | — |
+| `templates/` | what `init` puts in a talk: `blank/deck/` (default starter), `talk/AGENTS.md`, `talk/ci.yml` | — |
 | `scripts/` | `check-offline.mjs`, `verify.mjs` | — |
 
 `src/beatdeck/` never imports from `deck/`. Decks import everything from `'beatdeck'`.
@@ -33,7 +35,8 @@ npm run example:kernel-panic
 ## Rules
 
 1. `{ scene, beat }` is the whole state. One click = one beat. Every beat renders from `#s.b` alone.
-2. Automatic motion only inside beats marked `auto`, written in `deck/timeline.ts`.
+2. Motion that runs by itself only inside beats marked `auto`: self-contained in a component, or driven by
+   `initialLive` + `timeline` in `deck/timeline.ts` when other layers depend on it (see the skill).
 3. Fixed 1920×1080 stage. Absolute positions. Nothing responsive inside the stage.
 4. Offline: no CDN, remote fonts, APIs or analytics. The build fails otherwise.
 5. Content fidelity: never invent quotes, numbers, logos or URLs. Unknowns are explicit `TODO`s.

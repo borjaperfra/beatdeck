@@ -21,17 +21,21 @@ If the working directory has no `src/beatdeck/`, scaffold one, clean it and inst
 
 ```bash
 npx degit borjaperfra/beatdeck my-talk && cd my-talk
-npm run init -- --title "<title>" --author "<speaker>" --lang <en|es|…> [--theme light]
+npm run init -- --title "<title>" --author "<speaker>" --lang <en|es|…> [--theme light] [--demo]
 npm install
 ```
 
 `init` strips what belongs to the beatdeck repo, not to a talk (the Kernel Panic showcase and its non-MIT
-assets, plugin files, beatdeck's README), renames the package and writes title/author/lang/theme into the deck.
+assets, plugin files, beatdeck's README, changelog and CI), renames the package and writes title/author/lang/
+theme into the deck. `deck/` becomes a **blank two-scene starter** (standby + title, questions + QR) to build
+on; `--demo` keeps beatdeck's 6-scene demo instead, as a reference to read and replace. It also creates
+`reference/` (put the source there), `docs/CONTENT-AUDIT.md` and `docs/RUNBOOK.md` from the templates, the talk's
+`AGENTS.md` and a CI workflow that builds and verifies every push.
 Use `--theme light` when the room is bright or the talk is streamed. Run it once; it deletes itself.
 It also resets the demo's `qrUrl` to `TODO` and clears its tagline: set the real QR target only from the source.
 
-Then read `AGENTS.md` (repo rules) and skim `deck/` — the demo deck is the reference implementation of every
-pattern below. `init` removes the heavier example from your project; read it on GitHub when you need it:
+Then read `AGENTS.md`. The demo deck (on GitHub in `deck/`, or locally with `init --demo`) is the reference
+implementation of every pattern below. `init` removes the heavier example from your project; read it on GitHub when you need it:
 https://github.com/borjaperfra/beatdeck/tree/main/examples/kernel-panic — a 47-beat production talk. Look at
 `index.tsx` (custom chrome, `isCut` + `Overlay` for a cut to black), `deck/timeline.ts` (every kind of automatic
 beat), `architecture/` (one SVG world spanning several scenes) and `simulation/` (a Canvas 2D particle layer).

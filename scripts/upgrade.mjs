@@ -10,31 +10,36 @@
 //   engine   src/beatdeck/, skills/building-a-beatdeck/, scripts/{check-offline,verify,shot,lib,upgrade}.mjs,
 //            themes/neutral.css, themes/light.css → replaced. If you had edited one, your version is kept in
 //            .beatdeck-backup/<time>/ first (engine files are not meant to be edited for one talk).
-//   shared   vite.config.ts, tsconfig.json, src/main.tsx, src/vite-env.d.ts, AGENTS.md, CLAUDE.md, .gitignore,
-//            .gitattributes → replaced only if you never edited them; otherwise the new version is written next
+//   shared   vite.config.ts, tsconfig.json, src/main.tsx, src/vite-env.d.ts, .gitignore, .gitattributes,
+//            .github/workflows/verify.yml → replaced only if you never edited them; otherwise the new version is written next
 //            to yours as <file>.beatdeck-new for you to merge.
 //   package.json → engine dependencies set to the new versions, missing engine scripts added. Nothing removed.
-//   never    deck/, index.html, README.md, docs/, reference/, your own themes and scripts.
+//   never    deck/, index.html, README.md, AGENTS.md, CLAUDE.md, docs/, reference/, your own themes and scripts.
 // .beatdeck.json records the version and a hash of every engine/shared file, so the next upgrade knows what
 // you changed.
 import { createHash } from 'node:crypto';
 import { execSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ENGINE_DIRS = ['src/beatdeck', 'skills/building-a-beatdeck'];
 export const ENGINE_FILES = ['scripts/check-offline.mjs', 'scripts/verify.mjs', 'scripts/shot.mjs', 'scripts/lib.mjs', 'scripts/upgrade.mjs', 'themes/neutral.css', 'themes/light.css'];
-export const SHARED_FILES = ['vite.config.ts', 'tsconfig.json', 'src/main.tsx', 'src/vite-env.d.ts', 'AGENTS.md', 'CLAUDE.md', '.gitignore', '.gitattributes'];
+// shared config: [path in the talk, path in the beatdeck repo]
+export const SHARED = [
+  ['vite.config.ts', 'vite.config.ts'], ['tsconfig.json', 'tsconfig.json'], ['src/main.tsx', 'src/main.tsx'],
+  ['src/vite-env.d.ts', 'src/vite-env.d.ts'], ['.gitignore', '.gitignore'], ['.gitattributes', '.gitattributes'],
+  ['.github/workflows/verify.yml', 'templates/talk/ci.yml'],
+];
+export const SHARED_FILES = SHARED.map(([t]) => t);
 const MANIFEST = '.beatdeck.json';
 // scripts that belong to the beatdeck repo itself, never to a talk
 const REPO_ONLY_SCRIPT = (k) => k.includes('kernel-panic') || k === 'init';
 
 /** How a repo file looks inside a talk project (the same edits `init` makes). */
 export function forTalk(path, text) {
-  if (path === 'tsconfig.json') return text.replace(/,\s*"examples"/, '');
-  if (path === 'AGENTS.md') return text.replace(/^\| `examples\/kernel-panic\/`.*\n/m, '').replace(/^npm run example:kernel-panic\n/m, '');
+  if (path === 'tsconfig.json') return text.replace(/,\s*"examples"/, '').replace(/,\s*"templates"/, '');
   return text;
 }
 
@@ -97,7 +102,7 @@ async function main() {
   const log = { replaced: [], added: [], removed: [], backedUp: [], newBeside: [], pkg: [] };
   const pristine = {};
   const write = (f, buf) => { if (!dry) { mkdirSync(dirname(join(root, f)), { recursive: true }); writeFileSync(join(root, f), buf); } };
-  const keep = (f) => { if (!dry) { mkdirSync(dirname(join(backup, f)), { recursive: true }); cpSync(join(root, f), join(backup, f)); } log.backedUp.push(f); };
+  const keep = (f) => { if (!dry) { mkdirSync(dirname(join(backup, f)), { recursive: true }); copyFileSync(join(root, f), join(backup, f)); } log.backedUp.push(f); };
 
   // 2 · engine: replace (backing up anything you had edited — or everything, if there is no manifest yet)
   const upEngine = [...ENGINE_DIRS.flatMap((d) => filesUnder(src, d)), ...ENGINE_FILES.filter((f) => existsSync(join(src, f)))];
@@ -120,9 +125,9 @@ async function main() {
   }
 
   // 3 · shared: replace only if untouched
-  for (const f of SHARED_FILES) {
-    if (!existsSync(join(src, f))) continue;
-    const next = forTalk(f, readFileSync(join(src, f), 'utf8'));
+  for (const [f, from] of SHARED) {
+    if (!existsSync(join(src, from))) continue;
+    const next = forTalk(f, readFileSync(join(src, from), 'utf8'));
     pristine[f] = sha(Buffer.from(next));
     if (!existsSync(join(root, f))) { write(f, next); log.added.push(f); continue; }
     const cur = readFileSync(join(root, f), 'utf8');
