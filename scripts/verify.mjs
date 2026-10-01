@@ -17,9 +17,10 @@
 //                             (a beat can raise its own limit with `tolerance` in scenes.ts)
 //          [--max-wait=8000]  per-beat settle timeout (ms)   [--min-wait=500]
 //          [--jobs=4]         pages loading beats from the URL in parallel
+//          [--source=<file>]  Terminal lines and [data-exact] text must appear verbatim in this file
 // Requires a local Chrome (playwright-core, channel "chrome").
 import { chromium } from 'playwright-core';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { auditFrame, name, settle as settleOn, sleep, startServer } from './lib.mjs';
 
@@ -32,6 +33,8 @@ const DIFF = opt('diff', 0.1);
 const MAX_WAIT = opt('max-wait', 8000);
 const MIN_WAIT = opt('min-wait', 500);
 const JOBS = Math.max(1, opt('jobs', 4));
+const SOURCE = args.find((a) => a.startsWith('--source='))?.slice(9);
+if (SOURCE && !existsSync(SOURCE)) { console.error(`✕ verify: --source ${SOURCE} does not exist`); process.exit(1); }
 const JSQR = createRequire(import.meta.url).resolve('jsqr/dist/jsQR.js');
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
@@ -72,7 +75,7 @@ async function load(hash, query = 'capture=1', p = page) {
   }
 }
 
-const layout = [];
+const layout = [], warnings = new Set(), exact = new Map();
 
 // 1) forward walk
 await load('#1.1');
@@ -87,7 +90,10 @@ for (const [s, b] of all) {
   const ms = await settle();
   if (ms >= MAX_WAIT) slow.push(`${s}.${b}`);
   await page.screenshot({ path: `${OUT}/walk-${name(s, b)}.png` });
-  for (const issue of await page.evaluate(auditFrame)) layout.push(`${s}.${b} ${issue}`);
+  const audit = await page.evaluate(auditFrame);
+  audit.errors.forEach((e) => layout.push(`${s}.${b} ${e}`));
+  audit.warnings.forEach((w) => warnings.add(w));
+  audit.exact.forEach((t) => { if (!exact.has(t)) exact.set(t, `${s}.${b}`); });
   const h = await hashOf();
   if (h !== `#${s}.${b}`) errors.push(`[walk] expected #${s}.${b}, got ${h}`);
 }
@@ -198,17 +204,27 @@ await cmp.setViewportSize({ width: cols * (w + 8) + 8, height: 600 });
 await cmp.setContent(`<style>body{margin:0;background:#222;font:14px ui-monospace,monospace;color:#bbb;display:grid;grid-template-columns:repeat(${cols},${w}px);gap:8px;padding:8px}figure{margin:0}img{width:${w}px;height:${h}px;display:block}figcaption{padding:4px 2px}</style>${cells}`);
 await cmp.screenshot({ path: `${OUT}/contact.png`, fullPage: true });
 
-const report = { beats: all.length, backPath: back.map((p) => p.join('.')), errors, remote, mismatches, layout, qr: Object.fromEntries(decoded), slowToSettle: slow, presenterConnected: connected, seconds: Math.round((Date.now() - t0) / 1000) };
+// exact text: every Terminal line / [data-exact] element must appear verbatim in the source
+const notInSource = [];
+if (SOURCE) {
+  const src = readFileSync(SOURCE, 'utf8').replace(/\r/g, '');
+  for (const [t, at] of exact) if (!src.includes(t)) notInSource.push(`${at} ${JSON.stringify(t)} is not in ${SOURCE}`);
+}
+
+const report = { beats: all.length, backPath: back.map((p) => p.join('.')), errors, remote, mismatches, layout, notInSource, warnings: [...warnings], qr: Object.fromEntries(decoded), slowToSettle: slow, presenterConnected: connected, seconds: Math.round((Date.now() - t0) / 1000) };
 writeFileSync(`${OUT}/report.json`, JSON.stringify(report, null, 2));
 await browser.close();
 stop();
 
-const ok = !errors.length && !remote.length && !mismatches.length && !layout.length;
+const ok = !errors.length && !remote.length && !mismatches.length && !layout.length && !notInSource.length;
 console.log(`${ok ? '✓' : '✕'} verify · ${all.length} beats walked, ${back.length} walked back, ${all.length} reloaded from the URL · ${report.seconds}s`);
 console.log(`  frames identical (≤ ${DIFF}% px): ${mismatches.length ? `${mismatches.length} mismatch(es)` : 'yes'}`);
 mismatches.forEach((m) => console.log('    ' + m));
 console.log(`  text and layout: ${layout.length ? `${layout.length} problem(s)` : 'ok'}`);
 layout.forEach((m) => console.log('    ' + m));
+console.log(`  exact text: ${SOURCE ? (notInSource.length ? `${notInSource.length} line(s) not in the source` : `${exact.size} line(s) match ${SOURCE}`) : `${exact.size} line(s) on stage, not checked (pass --source=<script>)`}`);
+notInSource.forEach((m) => console.log('    ' + m));
+if (warnings.size) { console.log(`  warnings (not failing): ${warnings.size}`); [...warnings].slice(0, 12).forEach((w) => console.log('    ' + w)); if (warnings.size > 12) console.log(`    … see report.json`); }
 console.log(`  QR: ${qrUrl ? (decoded.size ? `decodes to ${qrUrl} on ${[...decoded.keys()].join(', ')}` : 'NOT FOUND') : 'not configured (qrUrl is TODO)'}`);
 console.log(`  console errors/warnings: ${errors.length} · remote requests: ${remote.length} · presenter: ${connected ? 'connected' : 'NOT connected'}`);
 errors.forEach((e) => console.log('    ' + e));

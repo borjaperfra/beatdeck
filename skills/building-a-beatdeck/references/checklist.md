@@ -9,7 +9,10 @@ Run before saying a deck (or a change to it) is done.
       every beat reached forwards (PageDown), backwards (PageUp, following `prev`) and straight from `#s.b`
       renders the same frame (pixel diff ≤ `--diff`, default 0.1%) · positions match · no console error or
       warning · no request to a non-local host · `?reduced=1` applies · the QR on stage decodes to `qrUrl`
-      · the presenter connects and drives the stage · the overview opens.
+      · the presenter connects and drives the stage · the overview opens · no visible text outside the stage or
+      overlapping other text · no µ/ß broken by uppercase.
+- [ ] With a written source: `npm run verify -- --source=<script>` — Terminal lines and `data-exact` text appear
+      verbatim in it.
 - [ ] Random or time-driven layers (particles, clocks) legitimately differ: give those beats a `tolerance` in
       `scenes.ts` (or raise `--diff` for the whole deck) and say why — never to hide a real mismatch. Beats reported as "still animating" need a look.
 
@@ -17,7 +20,8 @@ Run before saying a deck (or a change to it) is done.
 
 Open `artifacts/verify/contact.png`, then the full-size `walk-SS-BB.png` that matter.
 
-- [ ] No overlapping or clipped text; nothing touches the stage edge; nothing smaller than 18 px.
+- [ ] No clipped text or awkward collisions the audit cannot see (text over images, lines through labels);
+      read the "warnings" list (small text).
 - [ ] Auto beats are captured settled, and their start state is sane when entered directly.
 - [ ] Each beat shows one idea; the reveal order matches the talk.
 - [ ] Standby (1.1) is calm and the first click starts the talk.

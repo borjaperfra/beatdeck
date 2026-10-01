@@ -94,6 +94,9 @@ Keep source text in one module (e.g. `deck/terminal.ts`) copied character for ch
 
 ## CSS
 
+Audit attributes (read by `npm run verify` / `shot`): `data-exact` (text must appear verbatim in `--source`),
+`data-audit="off"` (skip this subtree in the layout audit — only for intentional overlaps).
+
 Base classes: `.layer` (absolute, full stage, no pointer events), `.mono`, `.cursor` (blinking), `.keep-case`
 (opts out of `text-transform: uppercase`, for `µs`, `ß`).
 Theme roles (neutral): `.t-statement`, `.t-editorial`, `.t-numeral`, `.t-meta`, `.t-eyebrow`.

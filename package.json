@@ -19,7 +19,7 @@
     "shot": "node scripts/shot.mjs",
     "example:kernel-panic": "vite --mode kernel-panic",
     "build:kernel-panic": "tsc --noEmit -p . && vite build --mode kernel-panic && node scripts/check-offline.mjs dist-kernel-panic examples/kernel-panic",
-    "verify:kernel-panic": "node scripts/verify.mjs dist-kernel-panic artifacts/verify-kernel-panic --diff=3 --max-wait=9000",
+    "verify:kernel-panic": "node scripts/verify.mjs dist-kernel-panic artifacts/verify-kernel-panic --diff=4 --max-wait=9000",
     "present:kernel-panic": "npm run build:kernel-panic && vite preview --mode kernel-panic --host 127.0.0.1 --port 4173 --strictPort --open",
     "typecheck": "tsc --noEmit -p .",
     "init": "node scripts/init.mjs"

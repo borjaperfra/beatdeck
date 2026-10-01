@@ -58,10 +58,11 @@ for (const [s, b] of wanted) {
   await settle(page);
   const file = `${OUT}/${name(s, b)}.png`;
   await page.screenshot({ path: file });
-  const issues = await page.evaluate(auditFrame);
+  const { errors: issues, warnings } = await page.evaluate(auditFrame);
   problems += issues.length;
   console.log(`${issues.length ? '✕' : '✓'} ${s}.${b} → ${file}`);
   issues.forEach((i) => console.log('    ' + i));
+  warnings.forEach((w) => console.log('    (warning) ' + w));
 }
 errors.forEach((e) => console.log('  [error] ' + e));
 await browser.close();

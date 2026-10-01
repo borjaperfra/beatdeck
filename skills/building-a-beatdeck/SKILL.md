@@ -140,7 +140,15 @@ iterating; keep `npm run verify` for the full proof.
 ```bash
 npm run build          # typecheck + bundle + offline check (fails on any remote URL)
 npm run verify         # forwards, backwards and from the URL; frames compared; QR decoded; presenter
+npm run verify -- --source=reference/<script>.md   # + every Terminal line / data-exact text verbatim in the script
 ```
+
+Besides comparing frames, `verify` audits the visible text of every beat and **fails** on text outside the
+1920×1080 stage, text overlapping other text, and `µ`/`ß` broken by uppercase; it **warns** on text under
+18 px. When the source has exact text (code, commands, formulas, quotes), pass `--source`: Terminal lines are
+checked automatically, and any other element that must match the script verbatim gets a `data-exact`
+attribute (`<div data-exact>distancia = c × (t_llegada − t_envío)</div>`). If an overlap is intentional
+(a glitch layer, text over its own shadow), mark that element `data-audit="off"` and say why.
 
 If a beat has an intentionally random or live layer (particles, dithering, a clock), give that beat a
 `tolerance` (% of pixels) in `scenes.ts` and say why. Never raise tolerances to silence a real mismatch.
