@@ -36,5 +36,5 @@ function Numbers_() {
   );
 }
 
-/** 05 NUMBERS — three facts, the last one counts itself. */
-export const Numbers = () => <Scene index={4}><Numbers_ /></Scene>;
+/** 06 NUMBERS — three facts, the last one counts itself. */
+export const Numbers = () => <Scene index={5}><Numbers_ /></Scene>;

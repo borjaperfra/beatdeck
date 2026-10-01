@@ -26,3 +26,4 @@ export function defineDeck<L = Record<string, never>>(def: DeckDefinition<L>): D
 export { Scene, Reveal, useScene, useArrival, type Arrival } from './components/Layout';
 export { Terminal, type TermLine, type TermMark } from './components/Terminal';
 export { NodeBox, Arrow, rectExit, type Rect, type NodeTone } from './components/Diagram';
+export { Plot, Zone, Series, Marker, PlotLabel, usePlot, scaleLinear, type Axis, type ChartTone } from './components/Chart';

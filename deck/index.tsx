@@ -7,8 +7,9 @@ import { Open } from './scenes/01-Open';
 import { Idea } from './scenes/02-Idea';
 import { State } from './scenes/03-State';
 import { Proof } from './scenes/04-Proof';
-import { Numbers } from './scenes/05-Numbers';
-import { End } from './scenes/06-End';
+import { Cost } from './scenes/05-Cost';
+import { Numbers } from './scenes/06-Numbers';
+import { End } from './scenes/07-End';
 
 /** Every layer of the stage, back to front. All stay mounted; each shows itself for its own scene. */
 function Stage() {
@@ -18,6 +19,7 @@ function Stage() {
       <Idea />
       <State />
       <Proof />
+      <Cost />
       <Numbers />
       <End />
     </>
