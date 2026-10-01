@@ -5,8 +5,8 @@ showcase runs exactly as it was presented; do not reuse them in your own talks.
 
 | File | What | Owner / licence |
 | --- | --- | --- |
-| `assets/source/cristian-cordova-*.{jpg,png}` | Speaker portrait (and its dithered version) | © Cristian Córdova. Not for reuse. |
-| `assets/source/avatar.png` | Speaker avatar in the tweet | © Cristian Córdova. Not for reuse. |
+| `assets/source/cristian-cordova-*.{jpg,png}` | Speaker portrait (and its dithered version) | © Cristian Córdova, used with permission. Not for reuse. |
+| `assets/source/avatar.png` | Speaker avatar in the tweet | © Cristian Córdova, used with permission. Not for reuse. |
 | `assets/source/helmcode-logo.svg`, `assets/stickers/qwencito.png` | Helmcode logo and sticker | © Helmcode. Trademark, not for reuse. |
 | `assets/source/vllm.png` | vLLM logo | vLLM project. Used nominatively. |
 | `assets/source/sglang.png` | SGLang logo | SGLang project. Used nominatively. |
