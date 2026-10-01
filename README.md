@@ -101,10 +101,11 @@ dependencies and adds new scripts. It never touches `deck/`, `index.html` or `do
 are backed up to `.beatdeck-backup/`; shared config you edited (`vite.config.ts`, `tsconfig.json`, …) is left as
 is, with the new version beside it as `*.beatdeck-new`. `.beatdeck.json` records the version.
 
-Talks created before `upgrade` existed (≤ 0.3.0) bootstrap it once:
+Talks created before `upgrade` existed (≤ 0.3.0) bootstrap it once (`--clean` also removes what early copies
+carried over from this repo: the showcase and its non-MIT assets, the plugin files, beatdeck's CI):
 
 ```bash
-npx degit borjaperfra/beatdeck/scripts .beatdeck-tmp && node .beatdeck-tmp/upgrade.mjs && rm -rf .beatdeck-tmp
+npx degit borjaperfra/beatdeck/scripts .beatdeck-tmp && node .beatdeck-tmp/upgrade.mjs --clean && rm -rf .beatdeck-tmp
 ```
 
 ## Keys

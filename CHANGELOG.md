@@ -2,6 +2,12 @@
 
 Talk projects update with `npm run upgrade` (see README → Updating a talk).
 
+## 0.5.1
+- Fix: `upgrade` refused talks copied before `init` existed (they still had `.claude-plugin/`); it now refuses
+  only the beatdeck repo itself (package named `beatdeck`), or pass `--force`.
+- `upgrade` reports beatdeck-repo leftovers in old talks (showcase, plugin files, old CI, changelog) and removes
+  them with `--clean`.
+
 ## 0.5.0
 - `init` starts from a **blank two-scene deck** (`--demo` keeps the demo), creates `reference/`,
   `docs/CONTENT-AUDIT.md`, `docs/RUNBOOK.md`, the talk's own `AGENTS.md` and a verify workflow, and no longer

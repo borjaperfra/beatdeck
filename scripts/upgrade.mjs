@@ -5,6 +5,7 @@
 //   npm run upgrade -- --ref v0.3.0     a tag, branch or commit
 //   npm run upgrade -- --from ../beatdeck   a local copy instead of GitHub
 //   npm run upgrade -- --dry-run        show what would change
+//   npm run upgrade -- --clean          also remove beatdeck-repo leftovers (showcase, plugin files, old CI)
 //
 // What it touches:
 //   engine   src/beatdeck/, skills/building-a-beatdeck/, scripts/{check-offline,verify,shot,lib,upgrade}.mjs,
@@ -77,8 +78,11 @@ async function main() {
   const ref = arg('ref') ?? 'main';
   const from = arg('from');
 
-  if (existsSync(join(root, '.claude-plugin'))) {
-    console.error('upgrade: this is the beatdeck repo itself, not a talk project.');
+  // the beatdeck repo itself (talks copied before `init` existed also have .claude-plugin/, but their own name)
+  const ownName = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).name;
+  if (existsSync(join(root, '.claude-plugin')) && ownName === 'beatdeck' && !argv.includes('--force')) {
+    console.error('upgrade: this looks like the beatdeck repo itself, not a talk project (package "beatdeck" with');
+    console.error('  .claude-plugin/). If it is a talk, rename it in package.json, or pass --force.');
     process.exit(1);
   }
 
@@ -155,6 +159,19 @@ async function main() {
   }
   if (!dry) writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
+  // 5 · leftovers of the beatdeck repo in talks copied before `init` cleaned them (reported; removed with --clean)
+  const read = (f) => { try { return readFileSync(join(root, f), 'utf8'); } catch { return ''; } };
+  const leftovers = [
+    ['examples/kernel-panic', existsSync(join(root, 'examples/kernel-panic/ASSETS-CREDITS.md'))],
+    ['.claude-plugin', existsSync(join(root, '.claude-plugin/marketplace.json')) && read('.claude-plugin/marketplace.json').includes('"beatdeck"')],
+    ['.github/workflows/ci.yml', read('.github/workflows/ci.yml').includes('kernel-panic')],
+    ['CHANGELOG.md', read('CHANGELOG.md').startsWith('# Changelog\n\nTalk projects update with `npm run upgrade`')],
+    ['docs/media', existsSync(join(root, 'docs/media/kernel-panic-architecture.jpg'))],
+    ['templates', existsSync(join(root, 'templates/blank/deck'))],
+  ].filter(([, is]) => is).map(([f]) => f);
+  const clean = argv.includes('--clean');
+  if (clean && !dry) for (const f of leftovers) rmSync(join(root, f), { recursive: true, force: true });
+
   if (!dry) writeManifest(root, upPkg.version, ref, pristine);
   if (tmp) rmSync(tmp, { recursive: true, force: true });
 
@@ -164,6 +181,11 @@ async function main() {
   if (log.backedUp.length) console.log(`  your previous engine files are in ${relative(root, backup)}/ (${n(log.backedUp)} file(s))`);
   for (const f of log.newBeside) console.log(`  ! ${f} was edited by you: the new version is ${f}.beatdeck-new — merge it by hand`);
   for (const l of log.pkg) console.log(`  package.json: ${l}`);
+  if (leftovers.length) {
+    console.log(clean && !dry
+      ? `  removed beatdeck-repo leftovers: ${leftovers.join(', ')}`
+      : `  ! beatdeck-repo leftovers in this talk (the showcase has non-MIT assets; the old CI fails): ${leftovers.join(', ')}\n    run again with --clean to remove them`);
+  }
   console.log(dry ? '  nothing written.' : '  next: npm install && npm run build && npm run verify');
 }
 

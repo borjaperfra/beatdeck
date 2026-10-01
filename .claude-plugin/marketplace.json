@@ -10,7 +10,7 @@
       "name": "beatdeck",
       "source": "./",
       "description": "Skill for building talks with beatdeck: source material → content audit → beat map → scenes → verified offline build.",
-      "version": "0.5.0"
+      "version": "0.5.1"
     }
   ]
 }
