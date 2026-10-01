@@ -5,7 +5,10 @@
   "description": "Talks as beats, not slides: a fixed 1920×1080 React stage where one click is one beat. Offline, deterministic, with presenter view.",
   "license": "MIT",
   "author": "Borja Pérez Francés",
-  "repository": { "type": "git", "url": "https://github.com/borjaperfra/beatdeck.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/borjaperfra/beatdeck.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,7 +20,8 @@
     "example:kernel-panic": "vite --mode kernel-panic",
     "build:kernel-panic": "tsc --noEmit -p . && vite build --mode kernel-panic && node scripts/check-offline.mjs dist-kernel-panic examples/kernel-panic",
     "present:kernel-panic": "npm run build:kernel-panic && vite preview --mode kernel-panic --host 127.0.0.1 --port 4173 --strictPort --open",
-    "typecheck": "tsc --noEmit -p ."
+    "typecheck": "tsc --noEmit -p .",
+    "init": "node scripts/init.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

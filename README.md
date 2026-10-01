@@ -8,10 +8,15 @@ with you.
 ![The demo deck: title](docs/media/demo-title.jpg)
 
 ```bash
-npx degit borjaperfra/beatdeck my-talk
-cd my-talk && npm install
+npx degit borjaperfra/beatdeck my-talk && cd my-talk
+npm run init -- --title "My talk" --author "Your Name" --lang en   # add --theme light for bright rooms
+npm install
 npm run dev          # http://127.0.0.1:5173
 ```
+
+`init` turns the copy into a clean talk project: it removes the showcase, the plugin files and this README,
+renames the package, and writes title, author, language and theme into the deck. The demo deck stays as a
+working starting point.
 
 ## Why
 

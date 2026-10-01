@@ -13,15 +13,21 @@ Your job is to turn what the speaker wants to say into beats that feel authored 
 
 ## 0 · Get a deck repo
 
-If the working directory has no `src/beatdeck/`, scaffold one and install:
+If the working directory has no `src/beatdeck/`, scaffold one, clean it and install:
 
 ```bash
-npx degit borjaperfra/beatdeck my-talk && cd my-talk && npm install
+npx degit borjaperfra/beatdeck my-talk && cd my-talk
+npm run init -- --title "<title>" --author "<speaker>" --lang <en|es|…> [--theme light]
+npm install
 ```
 
+`init` strips what belongs to the beatdeck repo, not to a talk (the Kernel Panic showcase and its non-MIT
+assets, plugin files, beatdeck's README), renames the package and writes title/author/lang/theme into the deck.
+Use `--theme light` when the room is bright or the talk is streamed. Run it once; it deletes itself.
+
 Then read `AGENTS.md` (repo rules) and skim `deck/` — the demo deck is the reference implementation of every
-pattern below. `examples/kernel-panic/` is a full 47-beat production talk (particles, SVG architecture, a
-520 ms panic cut to black) for when you need a heavier example.
+pattern below. For a heavier reference, the beatdeck repo on GitHub has `examples/kernel-panic/`, a 47-beat
+production talk (particles, an SVG architecture that spans scenes, a 520 ms panic cut to black).
 
 The talk lives in `deck/`. Never edit `src/beatdeck/` for one talk; if the engine truly lacks something, add it
 generically there and say so.

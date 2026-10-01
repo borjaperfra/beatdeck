@@ -20,6 +20,7 @@ verification). This file is the short version.
 ## Commands
 
 ```bash
+npm run init -- --title "…" --author "…"   # once, in a fresh copy: strips the repo down to a talk
 npm run dev            # http://127.0.0.1:5173/#1.1
 npm run build          # typecheck + bundle + offline check → dist/
 npm run present        # build + local production server
