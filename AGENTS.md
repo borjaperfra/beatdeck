@@ -24,6 +24,7 @@ npm run init -- --title "…" --author "…"   # once, in a fresh copy: strips t
 npm run dev            # http://127.0.0.1:5173/#1.1
 npm run build          # typecheck + bundle + offline check → dist/
 npm run present        # build + local production server
+npm run shot -- 3 4.2  # quick frames of some beats while designing → artifacts/shot/
 npm run verify         # every beat forwards/back/from URL, compared → artifacts/verify/ (contact.png)
 npm run example:kernel-panic
 ```

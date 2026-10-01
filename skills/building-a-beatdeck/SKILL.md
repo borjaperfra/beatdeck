@@ -122,6 +122,9 @@ export const Idea = () => <Scene index={1}><Idea_ /></Scene>;
 - Register every layer in `Stage` in `deck/index.tsx`, back to front.
 
 Work scene by scene: write it, `npm run dev`, open `http://127.0.0.1:5173/#3.1`, step through with →/←.
+To look at frames without a browser, `npm run shot -- 3 4.2 5.1-5.3` writes `artifacts/shot/SS-BB.png` (dev
+server, no build, a few seconds per beat) and runs the same text/layout audit as `verify`. Use it while
+iterating; keep `npm run verify` for the full proof.
 
 ## 6 · Verify (do not report done before this)
 

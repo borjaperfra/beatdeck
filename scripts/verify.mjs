@@ -16,11 +16,12 @@
 //          [--diff=0.1]       max % of pixels allowed to differ between walk/back and direct frames
 //                             (a beat can raise its own limit with `tolerance` in scenes.ts)
 //          [--max-wait=8000]  per-beat settle timeout (ms)   [--min-wait=500]
+//          [--jobs=4]         pages loading beats from the URL in parallel
 // Requires a local Chrome (playwright-core, channel "chrome").
 import { chromium } from 'playwright-core';
-import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { auditFrame, name, settle as settleOn, sleep, startServer } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const pos = args.filter((a) => !a.startsWith('--'));
@@ -30,53 +31,39 @@ const OUT = pos[1] ?? 'artifacts/verify';
 const DIFF = opt('diff', 0.1);
 const MAX_WAIT = opt('max-wait', 8000);
 const MIN_WAIT = opt('min-wait', 500);
-const PORT = 4174;
-const BASE = `http://127.0.0.1:${PORT}/`;
+const JOBS = Math.max(1, opt('jobs', 4));
 const JSQR = createRequire(import.meta.url).resolve('jsqr/dist/jsQR.js');
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const t0 = Date.now();
 
-const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--outDir', DIST, '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
-const stop = () => { try { server.kill(); } catch { /* already gone */ } };
-process.on('exit', stop);
-for (let i = 0; i < 50; i++) {
-  try { if ((await fetch(BASE)).ok) break; } catch { /* not up yet */ }
-  await sleep(200);
-}
-
+const { base: BASE, stop } = await startServer({ dist: DIST });
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--force-device-scale-factor=1'] });
-const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
 const errors = [], remote = [];
-context.on('request', (r) => {
-  const u = new URL(r.url());
-  if (u.protocol.startsWith('http') && !['127.0.0.1', 'localhost'].includes(u.hostname)) remote.push(r.url());
-});
-const page = await context.newPage();
-page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`[${m.type()}] ${m.text()}`); });
-page.on('pageerror', (e) => errors.push(`[pageerror] ${e.message}`));
-
-const name = (s, b) => `${String(s).padStart(2, '0')}-${String(b).padStart(2, '0')}`;
-const hashOf = async () => page.evaluate(() => location.hash);
-/** Wait until nothing animates (two quiet polls in a row), at least MIN_WAIT, at most MAX_WAIT. */
-async function settle() {
-  const start = Date.now();
-  await sleep(MIN_WAIT);
-  let quiet = 0;
-  while (Date.now() - start < MAX_WAIT) {
-    const busy = await page.evaluate(() => window.__beatdeck?.busy?.() ?? false);
-    quiet = busy ? 0 : quiet + 1;
-    if (quiet >= 2) return Date.now() - start;
-    await sleep(120);
-  }
-  return Date.now() - start;
+// one context per parallel worker: pages sharing a context get their animation frames throttled
+async function newContext() {
+  const c = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+  c.on('request', (r) => {
+    const u = new URL(r.url());
+    if (u.protocol.startsWith('http') && !['127.0.0.1', 'localhost'].includes(u.hostname)) remote.push(r.url());
+  });
+  return c;
 }
-async function load(hash, query = 'capture=1') {
-  await page.goto('about:blank');
-  await page.goto(`${BASE}?${query}${hash}`);
+const context = await newContext();
+const watch = (p, tag = '') => {
+  p.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`${tag}[${m.type()}] ${m.text()}`); });
+  p.on('pageerror', (e) => errors.push(`${tag}[pageerror] ${e.message}`));
+  return p;
+};
+const page = watch(await context.newPage());
+
+const hashOf = async () => page.evaluate(() => location.hash);
+const settle = (p = page) => settleOn(p, { min: MIN_WAIT, max: MAX_WAIT });
+async function load(hash, query = 'capture=1', p = page) {
+  await p.goto('about:blank');
+  await p.goto(`${BASE}?${query}${hash}`);
   try {
-    await page.waitForFunction(() => window.__beatdeck && document.fonts.status === 'loaded', null, { timeout: 15000 });
+    await p.waitForFunction(() => window.__beatdeck && document.fonts.status === 'loaded', null, { timeout: 15000 });
   } catch {
     console.error(`✕ verify: the deck did not start at ${hash}`);
     errors.forEach((e) => console.error('  ' + e));
@@ -85,39 +72,6 @@ async function load(hash, query = 'capture=1') {
   }
 }
 
-/**
- * DOM audit of the current frame (runs in the page). Looks only at text that is actually visible:
- * effective opacity (own × ancestors) > 0.5 and inside the stage layer tree.
- * Returns problems as strings.
- */
-function auditFrame() {
-  const stage = document.querySelector('.stage');
-  if (!stage) return [];
-  const out = [];
-  const visible = (el) => {
-    let o = 1;
-    for (let e = el; e && e !== stage.parentElement; e = e.parentElement) {
-      const cs = getComputedStyle(e);
-      if (cs.visibility === 'hidden' || cs.display === 'none') return false;
-      o *= +cs.opacity;
-    }
-    return o > 0.5;
-  };
-  // elements that own visible text directly
-  const texts = [];
-  const walker = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT);
-  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
-    if (!n.textContent.trim()) continue;
-    const el = n.parentElement;
-    if (!el || !visible(el)) continue;
-    if (!texts.includes(el)) texts.push(el);
-    // characters that change meaning under text-transform: uppercase (µ → Greek Μ, ß → SS)
-    if (/[µß]/.test(n.textContent) && getComputedStyle(el).textTransform === 'uppercase') {
-      out.push(`uppercase changes "${n.textContent.trim().slice(0, 40)}" (µ/ß): wrap the unit in <span className="keep-case">`);
-    }
-  }
-  return out;
-}
 const layout = [];
 
 // 1) forward walk
@@ -154,11 +108,19 @@ for (let guard = 0; guard <= all.length; guard++) {
 }
 if (back.at(-1)?.join('.') !== '1.1') errors.push(`[back] PageUp from the end stopped at #${back.at(-1)?.join('.')}, not #1.1`);
 
-// 3) direct from URL
-for (const [s, b] of all) {
-  await load(`#${s}.${b}`);
-  await settle();
-  await page.screenshot({ path: `${OUT}/direct-${name(s, b)}.png` });
+// 3) direct from URL, JOBS pages in parallel (each beat is a fresh load, so order does not matter)
+{
+  const queue = [...all];
+  const workers = await Promise.all(Array.from({ length: Math.min(JOBS, queue.length) }, async (_, i) => (i === 0 ? page : watch(await (await newContext()).newPage()))));
+  await Promise.all(workers.map(async (w) => {
+    for (let item = queue.shift(); item; item = queue.shift()) {
+      const [s, b] = item;
+      await load(`#${s}.${b}`, 'capture=1', w);
+      if ((await settle(w)) >= MAX_WAIT && !slow.includes(`${s}.${b}`)) slow.push(`${s}.${b}`);
+      await w.screenshot({ path: `${OUT}/direct-${name(s, b)}.png` });
+    }
+  }));
+  for (const w of workers) if (w !== page) await w.context().close();
 }
 
 // 4) compare frames (in the browser: decode both PNGs, count pixels differing by > 40 in any channel)
