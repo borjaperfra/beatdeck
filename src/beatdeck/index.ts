@@ -10,7 +10,7 @@ export { deck, useDeck, usePos, useHere, DeckEngine } from './engine';
 export { flags, reducedMotion } from './flags';
 export { glitch, rng, type GlitchState } from './fx/glitch';
 export { debugStats } from './debugStats';
-export { useStageScale, useStagePixelRatio, STAGE_W, STAGE_H } from './app/App';
+export { useStageScale, useStagePixelRatio, STAGE_W, STAGE_H } from './app/stage';
 export { DefaultChrome } from './app/DefaultChrome';
 export { getTimerStart } from './persistence';
 export { EASE, OUT_MS, IN_DELAY, swap, layerFade } from './components/motion';

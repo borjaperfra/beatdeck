@@ -14,7 +14,7 @@ production talk:
 ```bash
 npm run example:kernel-panic      # dev server
 npm run present:kernel-panic      # production build → dist-kernel-panic/, opened in the browser
-npm run screenshots:kernel-panic  # every beat, walked and reloaded from the URL
+npm run verify:kernel-panic       # every beat forwards, back and from the URL (3% tolerance: random particles)
 ```
 
 ## Where things are

@@ -41,7 +41,7 @@ export const SCENES: SceneDef[] = [
       { name: 'hardware', ref: 'slide 09', source: '¿Qué hardware (GPUs) necesitamos?' },
       { name: 'modelos', ref: 'slide 10', source: '¿Qué modelos queremos correr?' },
       { name: 'qué hacer', ref: 'slide 11', source: '¿Qué queremos hacer con la IA?' },
-      { name: 'burn', ref: 'slide 12', source: 'Queremos quemar tokens para crear cosas con código' },
+      { name: 'burn', tolerance: 8, ref: 'slide 12', source: 'Queremos quemar tokens para crear cosas con código' },
       { name: 'qwencito', ref: 'slide 13', source: 'Qwencito para los amigos · Qwen3.6-35B-A3B open-source release' },
     ],
   },
@@ -86,7 +86,7 @@ export const SCENES: SceneDef[] = [
       { name: '10+', ref: 'slide 23', source: '+10 modelos (no solo LLMs)' },
       { name: '50B tokens', auto: true, ref: 'slide 23', source: 'Procesamos casi 50B de tokens en un solo día · This is Fine', note: 'Automático: contador ~4,6 s, luego "this is fine".' },
       { name: 'still scaling', ref: 'new', source: '> still scaling._' },
-      { name: 'q&a', ref: 'slide 24', source: '¡Muchas gracias! · Cristian Córdova, Founder & CEO de Helmcode · @barckcode · QR' },
+      { name: 'q&a', tolerance: 8, ref: 'slide 24', source: '¡Muchas gracias! · Cristian Córdova, Founder & CEO de Helmcode · @barckcode · QR' },
     ],
   },
 ];

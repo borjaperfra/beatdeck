@@ -36,7 +36,15 @@ export const SCENES: SceneDef[] = [
     ],
   },
   {
-    id: '04', title: 'NUMBERS',
+    id: '04', title: 'PROOF',
+    beats: [
+      { name: 'build', note: 'Real output of npm run build on this deck.' },
+      { name: 'verify', note: 'Real output of npm run verify on this deck.' },
+      { name: 'what it checks' },
+    ],
+  },
+  {
+    id: '05', title: 'NUMBERS',
     beats: [
       { name: '0 requests' },
       { name: '1920 × 1080' },
@@ -44,7 +52,7 @@ export const SCENES: SceneDef[] = [
     ],
   },
   {
-    id: '05', title: 'END',
+    id: '06', title: 'END',
     beats: [
       { name: 'make your own' },
       { name: 'q&a' },

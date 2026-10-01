@@ -12,7 +12,7 @@ export interface Live {
 export function initialLive({ scene: s, beat: b }: Position): Live {
   return {
     typed: s === 0 && b <= 1 ? 0 : config.scaffold.length,
-    counted: !(s === 3 && b === 2),
+    counted: !(s === 4 && b === 2),
   };
 }
 
@@ -23,7 +23,7 @@ export function timeline({ scene: s, beat: b }: Position, host: TimelineHost<Liv
     for (let i = 1; i <= cmd.length; i++) host.at(400 + i * 38, () => host.setLive({ typed: i }));
     host.at(400 + cmd.length * 38 + 900, () => host.autoGo({ scene: 0, beat: 2 }));
   }
-  if (s === 3 && b === 2) {
+  if (s === 4 && b === 2) {
     host.at(2300, () => host.setLive({ counted: true }));
   }
 }

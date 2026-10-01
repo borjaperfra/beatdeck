@@ -17,6 +17,11 @@ export interface BeatDef {
   source?: string;
   /** Speaker cue. */
   note?: string;
+  /**
+   * `npm run verify`: % of pixels allowed to differ between reaching this beat by walking and by URL.
+   * Only for beats with intentionally random or live layers (particles, dithering, clocks). Default: --diff.
+   */
+  tolerance?: number;
 }
 
 export interface SceneDef {

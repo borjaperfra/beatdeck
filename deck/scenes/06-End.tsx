@@ -30,5 +30,5 @@ function End_() {
   );
 }
 
-/** 05 END — how to start, then questions. The QR is computed locally from deck.config.ts → qrUrl. */
-export const End = () => <Scene index={4}><End_ /></Scene>;
+/** 06 END — how to start, then questions. The QR is computed locally from deck.config.ts → qrUrl. */
+export const End = () => <Scene index={5}><End_ /></Scene>;

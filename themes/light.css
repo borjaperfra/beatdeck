@@ -13,4 +13,7 @@
   --hair-strong: rgba(0, 0, 0, 0.18);
   --accent: #2f5fd9;
   --accent-strong: #2450c2;
+  /* the operator UI (overview, presenter, debug) stays dark: keep its accent readable on #0a0a0a */
+  --op-accent: #7ea4ff;
+  --op-accent-strong: #3d6fe8;
 }

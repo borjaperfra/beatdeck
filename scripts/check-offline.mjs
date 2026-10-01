@@ -2,7 +2,7 @@
 // Usage: node scripts/check-offline.mjs <distDir> [deckDir]
 // URLs written in <deckDir>/deck.config.ts are allowed: they are shown on stage (e.g. the QR target), never fetched.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, extname, resolve } from 'node:path';
+import { join, extname, relative, resolve } from 'node:path';
 
 const DIST = resolve(process.argv[2] ?? 'dist');
 const DECK = resolve(process.argv[3] ?? 'deck');
@@ -38,7 +38,7 @@ const walk = (d) => readdirSync(d).forEach((f) => {
 });
 
 if (!existsSync(DIST)) {
-  console.error(`✕ offline check: ${DIST} does not exist (build first)`);
+  console.error(`✕ offline check: ${relative(process.cwd(), DIST)} does not exist (build first)`);
   process.exit(1);
 }
 walk(DIST);
@@ -46,4 +46,4 @@ if (bad.length) {
   console.error('\n✕ offline check: remote references found:\n  ' + [...new Set(bad)].join('\n  '));
   process.exit(1);
 }
-console.log(`✓ offline check: ${DIST} has no remote references`);
+console.log(`✓ offline check: ${relative(process.cwd(), DIST) || '.'} has no remote references`);

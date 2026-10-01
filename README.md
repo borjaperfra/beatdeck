@@ -73,19 +73,19 @@ built node by node, a self-counting number, and a locally generated QR code. Rep
 | `npm run dev` | dev server at `http://127.0.0.1:5173/#1.1` |
 | `npm run build` | typecheck + bundle + offline check → `dist/` (self-contained, any static server) |
 | `npm run present` | build and open the production build locally |
-| `npm run screenshots` | every beat walked and reloaded from its URL, presenter, overview → `artifacts/screenshots/`. Fails on console errors or remote requests. Needs a local Chrome. |
+| `npm run verify` | every beat walked forwards, walked back and reloaded from its URL, frames pixel-compared, reduced motion, QR decoded, presenter + overview, contact sheet → `artifacts/verify/`. Fails on any mismatch, console error or remote request. Needs a local Chrome. |
 
 ## Keys
 
 → ↓ PageDown, click, Space (fullscreen) next · ← ↑ PageUp previous · 1–9 scene · Home / End ·
 F fullscreen · O overview · P presenter window · B blackout. URL flags: `?view=presenter`, `?debug=1`,
-`?capture=1` (screenshots), `?reduced=1` (reduced motion).
+`?capture=1` (verification), `?reduced=1` (reduced motion).
 
 ## The skill
 
 `skills/building-a-beatdeck/` teaches an agent the whole workflow: collect the source (it ships a PPTX
 extractor), write a content audit so nothing is lost or invented, design the beat map, apply a theme, build
-the scenes, then verify every beat with screenshots before calling it done.
+the scenes, then run `npm run verify` and look at every frame before calling it done.
 
 **Claude Code** (plugin):
 

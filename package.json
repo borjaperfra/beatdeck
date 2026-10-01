@@ -15,10 +15,10 @@
     "build": "tsc --noEmit -p . && vite build && node scripts/check-offline.mjs dist deck",
     "present": "npm run build && vite preview --host 127.0.0.1 --port 4173 --strictPort --open",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
-    "screenshots": "node scripts/screenshots.mjs dist artifacts/screenshots",
-    "screenshots:kernel-panic": "node scripts/screenshots.mjs dist-kernel-panic artifacts/screenshots-kernel-panic --wait=2600 --auto-wait=7500",
+    "verify": "node scripts/verify.mjs dist artifacts/verify",
     "example:kernel-panic": "vite --mode kernel-panic",
     "build:kernel-panic": "tsc --noEmit -p . && vite build --mode kernel-panic && node scripts/check-offline.mjs dist-kernel-panic examples/kernel-panic",
+    "verify:kernel-panic": "node scripts/verify.mjs dist-kernel-panic artifacts/verify-kernel-panic --diff=3 --max-wait=9000",
     "present:kernel-panic": "npm run build:kernel-panic && vite preview --mode kernel-panic --host 127.0.0.1 --port 4173 --strictPort --open",
     "typecheck": "tsc --noEmit -p .",
     "init": "node scripts/init.mjs"
@@ -37,6 +37,7 @@
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.7.0",
+    "jsqr": "^1.4.0",
     "playwright-core": "^1.63.0",
     "typescript": "^5.9.3",
     "vite": "^6.4.3"

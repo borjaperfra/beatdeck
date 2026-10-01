@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { STAGE_H, STAGE_W, StageScale } from './stage';
 import { deck, useDeck } from '../engine';
 import { bindKeys, localTarget, startCursorAutoHide } from '../navigation';
 import { startStageSync } from '../presenter';
@@ -6,11 +7,10 @@ import { parseHash } from '../persistence';
 import { flags } from '../flags';
 import type { DeckDefinition, DeckState } from '../types';
 import { DefaultChrome } from './DefaultChrome';
+import { qrConfigured } from '../components/QR';
+import { gsap } from 'gsap';
 import { Overview } from './Overview';
 import { DebugPanel } from './DebugPanel';
-
-export const STAGE_W = 1920;
-export const STAGE_H = 1080;
 
 /** Fit the fixed 1920×1080 stage into the viewport, preserving aspect ratio (black letterbox). */
 function useStageFit() {
@@ -45,8 +45,18 @@ export function App({ def }: { def: DeckDefinition<any> }) {
 
   useEffect(() => {
     deck.start();
-    // test hook for scripts/screenshots.mjs (capture mode only)
-    if (flags.capture) (window as unknown as { __beatdeck: unknown }).__beatdeck = { beats: deck.scenes.map((s) => s.beats.map((b) => !!b.auto)) };
+    // test hook for scripts/verify.mjs (capture mode only)
+    if (flags.capture) {
+      (window as unknown as { __beatdeck: unknown }).__beatdeck = {
+        beats: deck.scenes.map((s) => s.beats.map((b) => !!b.auto)),
+        tolerance: deck.scenes.map((s) => s.beats.map((b) => b.tolerance ?? null)),
+        qrUrl: qrConfigured(def.qrUrl) ? def.qrUrl : null,
+        /** true while any GSAP tween or finite CSS animation/transition is still running */
+        busy: () =>
+          gsap.globalTimeline.getChildren(true, true, true).some((t) => t.isActive()) ||
+          document.getAnimations().some((a) => a.playState === 'running' && a.effect?.getComputedTiming().endTime !== Infinity),
+      };
+    }
     const offKeys = bindKeys(localTarget, {
       toggleOverview: () => setOverview((o) => !o),
       closeOverview: () => {
@@ -100,15 +110,4 @@ export function App({ def }: { def: DeckDefinition<any> }) {
       {flags.debug && <DebugPanel />}
     </div>
   );
-}
-
-const StageScale = createContext(1);
-
-/** Current stage scale (viewport px per stage px). */
-export const useStageScale = () => useContext(StageScale);
-
-/** Stage scale × devicePixelRatio, clamped to [1, 2] — the right backing-store ratio for a canvas layer. */
-export function useStagePixelRatio(): number {
-  const scale = useStageScale();
-  return Math.min(2, Math.max(1, scale * (window.devicePixelRatio || 1)));
 }

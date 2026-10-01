@@ -13,7 +13,7 @@ verification). This file is the short version.
 | `src/beatdeck/` | the engine (state, navigation, presenter, overview, debug, stage) | only for generic changes |
 | `examples/kernel-panic/` | a full 47-beat production talk, reference only | no |
 | `skills/building-a-beatdeck/` | the skill + references + `extract_pptx.py` | — |
-| `scripts/` | `check-offline.mjs`, `screenshots.mjs` | — |
+| `scripts/` | `check-offline.mjs`, `verify.mjs` | — |
 
 `src/beatdeck/` never imports from `deck/`. Decks import everything from `'beatdeck'`.
 
@@ -24,7 +24,7 @@ npm run init -- --title "…" --author "…"   # once, in a fresh copy: strips t
 npm run dev            # http://127.0.0.1:5173/#1.1
 npm run build          # typecheck + bundle + offline check → dist/
 npm run present        # build + local production server
-npm run screenshots    # every beat → artifacts/screenshots/, fails on errors or remote requests
+npm run verify         # every beat forwards/back/from URL, compared → artifacts/verify/ (contact.png)
 npm run example:kernel-panic
 ```
 
@@ -35,4 +35,4 @@ npm run example:kernel-panic
 3. Fixed 1920×1080 stage. Absolute positions. Nothing responsive inside the stage.
 4. Offline: no CDN, remote fonts, APIs or analytics. The build fails otherwise.
 5. Content fidelity: never invent quotes, numbers, logos or URLs. Unknowns are explicit `TODO`s.
-6. Don't call it done before `npm run build` and `npm run screenshots` pass and you've looked at the frames.
+6. Don't call it done before `npm run build` and `npm run verify` pass and you've looked at `artifacts/verify/contact.png`.

@@ -1,6 +1,6 @@
 ---
 name: building-a-beatdeck
-description: Builds a talk as a beatdeck - a fixed 1920x1080 React stage where one click is one beat, with authored motion, presenter view, overview, and an offline self-contained build. Covers turning source material (PPTX, Keynote/PDF export, Markdown, notes) into a content audit and a scene/beat map, choosing or applying a theme, writing scene layers, automatic beats, and verifying every beat with screenshots. Use whenever the task is creating, porting, restyling, rehearsing or fixing a presentation, talk, keynote, slide deck or conference session that should feel like a live system rather than slides, or whenever the repo contains src/beatdeck/.
+description: Builds a talk as a beatdeck - a fixed 1920x1080 React stage where one click is one beat, with authored motion, presenter view, overview, and an offline self-contained build. Covers turning source material (PPTX, Keynote/PDF export, Markdown, notes) into a content audit and a scene/beat map, choosing or applying a theme, writing scene layers, automatic beats, and verifying every beat with npm run verify. Use whenever the task is creating, porting, restyling, rehearsing or fixing a presentation, talk, keynote, slide deck or conference session that should feel like a live system rather than slides, or whenever the repo contains src/beatdeck/.
 license: MIT
 ---
 
@@ -108,10 +108,11 @@ Work scene by scene: write it, `npm run dev`, open `http://127.0.0.1:5173/#3.1`,
 
 ```bash
 npm run build          # typecheck + bundle + offline check (fails on any remote URL)
-npm run screenshots    # every beat walked AND reloaded from its URL, presenter + overview, 0 errors required
+npm run verify         # forwards, backwards and from the URL; frames compared; QR decoded; presenter
 ```
 
-Look at the screenshots (make a contact sheet) and check against `references/checklist.md`: no overlaps or
+`verify` writes `artifacts/verify/contact.png` (every beat) plus `walk-`, `back-` and `direct-SS-BB.png`. Open
+the contact sheet and the frames that matter, and check against `references/checklist.md`: no overlaps or
 clipped text, every beat identical whether reached forwards, backwards or straight from `#s.b`, auto beats
 settle, the closing QR scans, no placeholder left except an explicit, reported `TODO`.
 

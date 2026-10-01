@@ -42,7 +42,7 @@ Rules:
 
 - `initialLive(pos)` must give the auto beat its *start* state and every other beat the *settled* state.
   (Coming back to beat 4 from beat 5 must not replay beat 4's cascade half-way.)
-- `?capture=1` suppresses `autoGo` so screenshots can step through auto beats.
+- `?capture=1` suppresses `autoGo` so `npm run verify` can step through auto beats.
 - If a beat auto-advances, stepping back into it would immediately bounce forward again. Override `prev`
   so that "previous" skips it (the demo returns to standby from anywhere in scene 1).
 

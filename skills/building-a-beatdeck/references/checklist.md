@@ -2,22 +2,26 @@
 
 Run before saying a deck (or a change to it) is done.
 
-## Automated
+## Automated — `npm run verify`
 
 - [ ] `npm run build` passes: typecheck, bundle, offline check (no remote URL in `dist/`).
-- [ ] `npm run screenshots` exits 0: every beat walked with PageDown and reloaded from `#s.b`, no console
-      errors or warnings, no request to a non-local host, presenter connects and drives the stage.
+- [ ] `npm run verify` exits 0. It checks, so you don't have to by hand:
+      every beat reached forwards (PageDown), backwards (PageUp, following `prev`) and straight from `#s.b`
+      renders the same frame (pixel diff ≤ `--diff`, default 0.1%) · positions match · no console error or
+      warning · no request to a non-local host · `?reduced=1` applies · the QR on stage decodes to `qrUrl`
+      · the presenter connects and drives the stage · the overview opens.
+- [ ] Random or time-driven layers (particles, clocks) legitimately differ: give those beats a `tolerance` in
+      `scenes.ts` (or raise `--diff` for the whole deck) and say why — never to hide a real mismatch. Beats reported as "still animating" need a look.
 
-## Look at the screenshots
+## Look at the frames
 
-Build a contact sheet (all `SS-BB.png` in a grid) and open the full-size frames that matter.
+Open `artifacts/verify/contact.png`, then the full-size `walk-SS-BB.png` that matter.
 
 - [ ] No overlapping or clipped text; nothing touches the stage edge; nothing smaller than 18 px.
-- [ ] Walk frame `SS-BB.png` and direct frame `direct-SS-BB.png` match for every beat (reconstructable).
-- [ ] Auto beats are captured in their settled state, and their start state is sane when entered directly.
+- [ ] Auto beats are captured settled, and their start state is sane when entered directly.
 - [ ] Each beat shows one idea; the reveal order matches the talk.
 - [ ] Standby (1.1) is calm and the first click starts the talk.
-- [ ] The closing QR is present and scans (or the URL is an explicit, reported `TODO`).
+- [ ] Terminal text matches the source character for character (keep it in one module, never retyped).
 
 ## Content
 

@@ -1,0 +1,218 @@
+// Verifies a built deck end to end — the automated half of skills/building-a-beatdeck/references/checklist.md.
+//
+//   1. forward walk with PageDown (like a clicker)        → <out>/walk-SS-BB.png, position checked on every beat
+//   2. backward walk with PageUp from the last beat        → <out>/back-SS-BB.png (follows the deck's own `prev`)
+//   3. every beat loaded straight from its URL hash        → <out>/direct-SS-BB.png
+//   4. walk and back frames pixel-compared with direct     → a beat that differs is not reconstructable from state
+//   5. ?reduced=1 applies and renders without errors
+//   6. the closing QR decodes to deck qrUrl (if configured)
+//   7. presenter window connects and drives the stage; overview opens
+//   8. contact sheet of every beat                         → <out>/contact.png
+// Fails on console errors/warnings, page errors, wrong positions, frame mismatches, a QR that does not scan,
+// or any request to a non-local host. `?capture=1` freezes auto-advance and ambient loops; each frame is taken
+// once nothing is animating (GSAP + CSS), bounded by --max-wait.
+//
+// Usage: node scripts/verify.mjs [distDir=dist] [outDir=artifacts/verify]
+//          [--diff=0.1]       max % of pixels allowed to differ between walk/back and direct frames
+//                             (a beat can raise its own limit with `tolerance` in scenes.ts)
+//          [--max-wait=8000]  per-beat settle timeout (ms)   [--min-wait=500]
+// Requires a local Chrome (playwright-core, channel "chrome").
+import { chromium } from 'playwright-core';
+import { spawn } from 'node:child_process';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+
+const args = process.argv.slice(2);
+const pos = args.filter((a) => !a.startsWith('--'));
+const opt = (k, d) => +(args.find((a) => a.startsWith(`--${k}=`))?.split('=')[1] ?? d);
+const DIST = pos[0] ?? 'dist';
+const OUT = pos[1] ?? 'artifacts/verify';
+const DIFF = opt('diff', 0.1);
+const MAX_WAIT = opt('max-wait', 8000);
+const MIN_WAIT = opt('min-wait', 500);
+const PORT = 4174;
+const BASE = `http://127.0.0.1:${PORT}/`;
+const JSQR = createRequire(import.meta.url).resolve('jsqr/dist/jsQR.js');
+rmSync(OUT, { recursive: true, force: true });
+mkdirSync(OUT, { recursive: true });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const t0 = Date.now();
+
+const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--outDir', DIST, '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
+const stop = () => { try { server.kill(); } catch { /* already gone */ } };
+process.on('exit', stop);
+for (let i = 0; i < 50; i++) {
+  try { if ((await fetch(BASE)).ok) break; } catch { /* not up yet */ }
+  await sleep(200);
+}
+
+const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--force-device-scale-factor=1'] });
+const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+const errors = [], remote = [];
+context.on('request', (r) => {
+  const u = new URL(r.url());
+  if (u.protocol.startsWith('http') && !['127.0.0.1', 'localhost'].includes(u.hostname)) remote.push(r.url());
+});
+const page = await context.newPage();
+page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`[${m.type()}] ${m.text()}`); });
+page.on('pageerror', (e) => errors.push(`[pageerror] ${e.message}`));
+
+const name = (s, b) => `${String(s).padStart(2, '0')}-${String(b).padStart(2, '0')}`;
+const hashOf = async () => page.evaluate(() => location.hash);
+/** Wait until nothing animates (two quiet polls in a row), at least MIN_WAIT, at most MAX_WAIT. */
+async function settle() {
+  const start = Date.now();
+  await sleep(MIN_WAIT);
+  let quiet = 0;
+  while (Date.now() - start < MAX_WAIT) {
+    const busy = await page.evaluate(() => window.__beatdeck?.busy?.() ?? false);
+    quiet = busy ? 0 : quiet + 1;
+    if (quiet >= 2) return Date.now() - start;
+    await sleep(120);
+  }
+  return Date.now() - start;
+}
+async function load(hash, query = 'capture=1') {
+  await page.goto('about:blank');
+  await page.goto(`${BASE}?${query}${hash}`);
+  try {
+    await page.waitForFunction(() => window.__beatdeck && document.fonts.status === 'loaded', null, { timeout: 15000 });
+  } catch {
+    console.error(`✕ verify: the deck did not start at ${hash}`);
+    errors.forEach((e) => console.error('  ' + e));
+    await browser.close();
+    process.exit(1);
+  }
+}
+
+// 1) forward walk
+await load('#1.1');
+await page.evaluate(() => localStorage.clear());
+await load('#1.1');
+const { beats, qrUrl, tolerance } = await page.evaluate(() => ({ beats: window.__beatdeck.beats, qrUrl: window.__beatdeck.qrUrl, tolerance: window.__beatdeck.tolerance }));
+const tol = (s, b) => tolerance?.[s - 1]?.[b - 1] ?? DIFF;
+const all = beats.flatMap((bs, s) => bs.map((_, b) => [s + 1, b + 1]));
+const slow = [];
+for (const [s, b] of all) {
+  if (!(s === 1 && b === 1)) await page.keyboard.press('PageDown');
+  const ms = await settle();
+  if (ms >= MAX_WAIT) slow.push(`${s}.${b}`);
+  await page.screenshot({ path: `${OUT}/walk-${name(s, b)}.png` });
+  const h = await hashOf();
+  if (h !== `#${s}.${b}`) errors.push(`[walk] expected #${s}.${b}, got ${h}`);
+}
+
+// 2) backward walk (whatever path the deck's prev() takes)
+const back = [];
+for (let guard = 0; guard <= all.length; guard++) {
+  if (guard > 0) {
+    const before = await hashOf();
+    await page.keyboard.press('PageUp');
+    await settle();
+    if ((await hashOf()) === before) break; // reached the start
+  }
+  const h = await hashOf();
+  const [s, b] = h.slice(1).split('.').map(Number);
+  await page.screenshot({ path: `${OUT}/back-${name(s, b)}.png` });
+  back.push([s, b]);
+}
+if (back.at(-1)?.join('.') !== '1.1') errors.push(`[back] PageUp from the end stopped at #${back.at(-1)?.join('.')}, not #1.1`);
+
+// 3) direct from URL
+for (const [s, b] of all) {
+  await load(`#${s}.${b}`);
+  await settle();
+  await page.screenshot({ path: `${OUT}/direct-${name(s, b)}.png` });
+}
+
+// 4) compare frames (in the browser: decode both PNGs, count pixels differing by > 40 in any channel)
+const cmp = await context.newPage();
+await cmp.setContent('<canvas id=a></canvas><canvas id=b></canvas>');
+const b64 = (f) => `data:image/png;base64,${readFileSync(f).toString('base64')}`;
+async function diffPct(fa, fb) {
+  return cmp.evaluate(async ([ua, ub]) => {
+    const img = (u) => new Promise((r) => { const i = new Image(); i.onload = () => r(i); i.src = u; });
+    const [ia, ib] = await Promise.all([img(ua), img(ub)]);
+    const px = (i, id) => { const c = document.getElementById(id); c.width = i.width; c.height = i.height; const x = c.getContext('2d'); x.drawImage(i, 0, 0); return x.getImageData(0, 0, i.width, i.height).data; };
+    const a = px(ia, 'a'), b = px(ib, 'b');
+    let n = 0;
+    for (let k = 0; k < a.length; k += 4) if (Math.abs(a[k] - b[k]) > 40 || Math.abs(a[k + 1] - b[k + 1]) > 40 || Math.abs(a[k + 2] - b[k + 2]) > 40) n++;
+    return (100 * n) / (a.length / 4);
+  }, [b64(fa), b64(fb)]);
+}
+const mismatches = [];
+for (const [s, b] of all) {
+  const d = await diffPct(`${OUT}/walk-${name(s, b)}.png`, `${OUT}/direct-${name(s, b)}.png`);
+  if (d > tol(s, b)) mismatches.push(`walk ${s}.${b} vs direct: ${d.toFixed(2)}% of pixels differ (max ${tol(s, b)}%)`);
+}
+for (const [s, b] of back) {
+  const d = await diffPct(`${OUT}/back-${name(s, b)}.png`, `${OUT}/direct-${name(s, b)}.png`);
+  if (d > tol(s, b)) mismatches.push(`back ${s}.${b} vs direct: ${d.toFixed(2)}% of pixels differ (max ${tol(s, b)}%)`);
+}
+
+// 5) reduced motion
+const [ls, lb] = all.at(-1);
+await load(`#${ls}.${lb}`, 'capture=1&reduced=1');
+await settle();
+if (!(await page.evaluate(() => document.documentElement.classList.contains('reduced-motion')))) errors.push('[reduced] ?reduced=1 did not apply .reduced-motion');
+
+// 6) QR: decode every walk frame, the configured URL must be found and nothing else
+const decoded = new Map();
+if (qrUrl) {
+  await cmp.addScriptTag({ path: JSQR });
+  for (const [s, b] of all) {
+    const text = await cmp.evaluate(async (u) => {
+      const i = await new Promise((r) => { const im = new Image(); im.onload = () => r(im); im.src = u; });
+      const c = document.getElementById('a'); c.width = i.width; c.height = i.height;
+      const x = c.getContext('2d'); x.drawImage(i, 0, 0);
+      const d = x.getImageData(0, 0, i.width, i.height);
+      return window.jsQR(d.data, d.width, d.height)?.data ?? null;
+    }, b64(`${OUT}/walk-${name(s, b)}.png`));
+    if (text) decoded.set(`${s}.${b}`, text);
+  }
+  if (!decoded.size) errors.push(`[qr] qrUrl is ${qrUrl} but no frame has a QR that decodes`);
+  for (const [p, t] of decoded) if (t !== qrUrl) errors.push(`[qr] ${p} decodes to ${t}, expected ${qrUrl}`);
+}
+
+// 7) presenter + overview
+const presenter = await context.newPage();
+presenter.on('pageerror', (e) => errors.push(`[presenter pageerror] ${e.message}`));
+await load(`#${ls}.${lb}`);
+await presenter.goto(`${BASE}?view=presenter`);
+await sleep(1800);
+await presenter.screenshot({ path: `${OUT}/presenter.png` });
+const connected = await presenter.evaluate(() => document.body.innerText.toLowerCase().includes('stage connected'));
+if (!connected) errors.push('[presenter] not connected to the stage');
+const before = await hashOf();
+await presenter.keyboard.press('PageUp');
+await sleep(600);
+if ((await hashOf()) === before) errors.push(`[presenter] PageUp did not move the stage (${before})`);
+await presenter.close();
+await page.keyboard.press('o');
+await sleep(400);
+await page.screenshot({ path: `${OUT}/overview.png` });
+await page.keyboard.press('Escape');
+
+// 8) contact sheet
+const cols = 4, w = 480, h = 270;
+const cells = all.map(([s, b]) => `<figure><img src="${b64(`${OUT}/walk-${name(s, b)}.png`)}"><figcaption>${s}.${b}${beats[s - 1][b - 1] ? ' · auto' : ''}</figcaption></figure>`).join('');
+await cmp.setViewportSize({ width: cols * (w + 8) + 8, height: 600 });
+await cmp.setContent(`<style>body{margin:0;background:#222;font:14px ui-monospace,monospace;color:#bbb;display:grid;grid-template-columns:repeat(${cols},${w}px);gap:8px;padding:8px}figure{margin:0}img{width:${w}px;height:${h}px;display:block}figcaption{padding:4px 2px}</style>${cells}`);
+await cmp.screenshot({ path: `${OUT}/contact.png`, fullPage: true });
+
+const report = { beats: all.length, backPath: back.map((p) => p.join('.')), errors, remote, mismatches, qr: Object.fromEntries(decoded), slowToSettle: slow, presenterConnected: connected, seconds: Math.round((Date.now() - t0) / 1000) };
+writeFileSync(`${OUT}/report.json`, JSON.stringify(report, null, 2));
+await browser.close();
+stop();
+
+const ok = !errors.length && !remote.length && !mismatches.length;
+console.log(`${ok ? '✓' : '✕'} verify · ${all.length} beats walked, ${back.length} walked back, ${all.length} reloaded from the URL · ${report.seconds}s`);
+console.log(`  frames identical (≤ ${DIFF}% px): ${mismatches.length ? `${mismatches.length} mismatch(es)` : 'yes'}`);
+mismatches.forEach((m) => console.log('    ' + m));
+console.log(`  QR: ${qrUrl ? (decoded.size ? `decodes to ${qrUrl} on ${[...decoded.keys()].join(', ')}` : 'NOT FOUND') : 'not configured (qrUrl is TODO)'}`);
+console.log(`  console errors/warnings: ${errors.length} · remote requests: ${remote.length} · presenter: ${connected ? 'connected' : 'NOT connected'}`);
+errors.forEach((e) => console.log('    ' + e));
+remote.forEach((u) => console.log('    remote: ' + u));
+if (slow.length) console.log(`  still animating after ${MAX_WAIT} ms (frame taken anyway): ${slow.join(', ')}`);
+console.log(`  frames, contact sheet, report → ${OUT}/`);
+process.exit(ok ? 0 : 1);
