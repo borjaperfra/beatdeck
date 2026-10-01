@@ -1,0 +1,39 @@
+/*
+ * beatdeck · neutral theme (default).
+ * Near-black stage, off-white type, one accent, hairlines. Change --accent and you have rebranded the deck.
+ * Fonts: Inter + JetBrains Mono (SIL OFL), bundled from npm — nothing is fetched at runtime.
+ */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+:root {
+  --bg: #0b0b0c;
+  --surface: #121214;
+  --ink: #ededed;
+  --ink-2: rgba(237, 237, 237, 0.62);
+  --ink-3: rgba(237, 237, 237, 0.36);
+  --hair: rgba(255, 255, 255, 0.12);
+  --hair-strong: rgba(255, 255, 255, 0.16);
+
+  --accent: #5b8cff;
+  --accent-strong: #3d6fe8;
+  --ok: #3ccf91;
+  --warning: #ffbd2e;
+  --fault: #ff5f56;
+
+  /* operator UI (overview, presenter, debug) */
+  --op-accent: var(--accent);
+  --op-accent-strong: var(--accent-strong);
+
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Type roles. Sizes are set per element on the 1920×1080 stage; these carry the voice. */
+.t-statement { font-weight: 600; letter-spacing: -0.045em; line-height: 0.9; white-space: nowrap; }
+.t-editorial { font-weight: 500; letter-spacing: -0.035em; line-height: 0.98; }
+.t-numeral { font-weight: 300; letter-spacing: -0.04em; line-height: 0.8; font-variant-numeric: tabular-nums; }
+.t-meta { font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.t-eyebrow { font-family: var(--font-mono); font-size: 24px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }

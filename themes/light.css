@@ -1,0 +1,16 @@
+/*
+ * beatdeck · light variant, for bright rooms and streams. Import it after neutral.css:
+ *   import '../themes/neutral.css'; import '../themes/light.css';
+ * The letterbox stays black; only the stage changes.
+ */
+:root {
+  --bg: #f4f4f2;
+  --surface: #ffffff;
+  --ink: #111112;
+  --ink-2: rgba(17, 17, 18, 0.62);
+  --ink-3: rgba(17, 17, 18, 0.38);
+  --hair: rgba(0, 0, 0, 0.12);
+  --hair-strong: rgba(0, 0, 0, 0.18);
+  --accent: #2f5fd9;
+  --accent-strong: #2450c2;
+}

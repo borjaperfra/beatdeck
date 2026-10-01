@@ -1,0 +1,33 @@
+/* Helmcode tokens (design system) + the event/semantic colours used by v3. */
+:root {
+  --bg: #0a0a0a;
+  --black: #000;
+  --surface: #111111;
+  --surface-raised: #161616;
+  --ink: #ffffff;
+  --ink-2: rgba(255, 255, 255, 0.6);
+  --ink-3: rgba(255, 255, 255, 0.35);
+  --off-white: #f0f0f0;
+  --hair: rgba(255, 255, 255, 0.09);
+  --hair-strong: rgba(255, 255, 255, 0.14);
+  --kernel: #4934e1;
+  --violet-text: #818cf8;
+  --warning: #ffbd2e;
+  --fault: #ff5f56;
+  --ok: #27c93f;
+  --cloudflare: #f38020;
+
+  /* beatdeck engine tokens */
+  --accent: var(--violet-text);
+  --accent-strong: var(--kernel);
+  --op-accent: #818cf8;
+  --op-accent-strong: #4934e1;
+
+  --font-sans: 'Roboto', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+  --font-event: 'Archivo Black', 'Roboto', sans-serif;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-tweet: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-stamp: cubic-bezier(0.2, 0.9, 0.3, 1);
+}

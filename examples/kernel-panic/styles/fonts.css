@@ -1,0 +1,5 @@
+/* All fonts are local (from the Design project). font-display: block avoids a fallback flash on the projector;
+   the app also waits for document.fonts before showing the stage. */
+@font-face { font-family: 'Roboto'; src: url(../assets/fonts/Roboto-VF.woff2) format('woff2'); font-weight: 100 900; font-display: block; }
+@font-face { font-family: 'Roboto Mono'; src: url(../assets/fonts/RobotoMono-VF.woff2) format('woff2'); font-weight: 100 700; font-display: block; }
+@font-face { font-family: 'Archivo Black'; src: url(../assets/fonts/ArchivoBlack-400.woff2) format('woff2'); font-weight: 400; font-display: block; }

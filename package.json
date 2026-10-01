@@ -1,0 +1,40 @@
+{
+  "name": "beatdeck",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Talks as beats, not slides: a fixed 1920×1080 React stage where one click is one beat. Offline, deterministic, with presenter view.",
+  "license": "MIT",
+  "author": "Borja Pérez Francés",
+  "repository": { "type": "git", "url": "https://github.com/borjaperfra/beatdeck.git" },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p . && vite build && node scripts/check-offline.mjs dist deck",
+    "present": "npm run build && vite preview --host 127.0.0.1 --port 4173 --strictPort --open",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "screenshots": "node scripts/screenshots.mjs dist artifacts/screenshots",
+    "screenshots:kernel-panic": "node scripts/screenshots.mjs dist-kernel-panic artifacts/screenshots-kernel-panic --wait=2600 --auto-wait=7500",
+    "example:kernel-panic": "vite --mode kernel-panic",
+    "build:kernel-panic": "tsc --noEmit -p . && vite build --mode kernel-panic && node scripts/check-offline.mjs dist-kernel-panic examples/kernel-panic",
+    "present:kernel-panic": "npm run build:kernel-panic && vite preview --mode kernel-panic --host 127.0.0.1 --port 4173 --strictPort --open",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "gsap": "^3.15.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "playwright-core": "^1.63.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.3"
+  }
+}

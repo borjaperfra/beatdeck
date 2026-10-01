@@ -1,0 +1,13 @@
+{
+  "name": "beatdeck",
+  "owner": { "name": "Borja Pérez Francés", "url": "https://github.com/borjaperfra" },
+  "description": "beatdeck: talks as beats, not slides.",
+  "plugins": [
+    {
+      "name": "beatdeck",
+      "source": "./",
+      "description": "Skill for building talks with beatdeck: source material → content audit → beat map → scenes → verified offline build.",
+      "version": "0.1.0"
+    }
+  ]
+}

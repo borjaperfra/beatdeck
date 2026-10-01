@@ -1,0 +1,21 @@
+/* Kernel Panic additions to the beatdeck base stage (src/beatdeck/styles/stage.css). */
+.jitter { position: absolute; inset: 0; }
+.stage canvas.particles { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.event { font-family: var(--font-event); }
+.block-cursor { display: inline-block; width: 0.55em; height: 1em; background: currentColor; vertical-align: -0.12em; margin-left: 0.08em; }
+
+/* reduced motion: keep narrative, drop the ambient/violent stuff */
+.reduced-motion .tweet-float { animation: none !important; }
+
+/* 02 tweet: v3's slow float (translate 9px / rotate .35°), only while the tweet is on screen */
+.tweet-float { animation: tweet-float 9.42s ease-in-out infinite; }
+.tweet-tilt { animation: tweet-tilt 14.45s ease-in-out infinite; }
+@keyframes tweet-float { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(9px); } 75% { transform: translateY(-9px); } }
+@keyframes tweet-tilt { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(.35deg); } 75% { transform: rotate(-.35deg); } }
+.capture .tweet-float, .capture .tweet-tilt { animation: none; }
+.reduced-motion .tweet-tilt { animation: none !important; }
+
+/* 05.1 GPU drawing: fans turn slowly once the card is built */
+.gpu-fan.spin { animation: gpu-spin 7s linear 1.8s infinite; }
+@keyframes gpu-spin { to { transform: rotate(360deg); } }
+.capture .gpu-fan.spin, .reduced-motion .gpu-fan.spin { animation: none; }

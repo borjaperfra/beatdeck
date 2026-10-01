@@ -1,0 +1,12 @@
+{
+  "name": "beatdeck",
+  "displayName": "beatdeck",
+  "version": "0.1.0",
+  "description": "Build talks as beats, not slides: a fixed 1920x1080 React stage where one click is one beat, with authored motion, presenter view and an offline build.",
+  "author": { "name": "Borja Pérez Francés", "url": "https://github.com/borjaperfra" },
+  "homepage": "https://github.com/borjaperfra/beatdeck",
+  "repository": "https://github.com/borjaperfra/beatdeck",
+  "license": "MIT",
+  "keywords": ["presentation", "slides", "talk", "keynote", "react", "gsap", "offline"],
+  "skills": ["./skills/"]
+}

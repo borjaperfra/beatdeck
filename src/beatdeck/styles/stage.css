@@ -1,0 +1,35 @@
+/* beatdeck base: viewport, fixed 1920×1080 stage, layers, cursor, chrome. Colours and fonts come from the theme. */
+html, body, #root { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+html { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+body { color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; overscroll-behavior: none; }
+*, *::before, *::after { box-sizing: border-box; }
+*:focus, *:focus-visible { outline: none; }
+::selection { background: transparent; }
+img { -webkit-user-drag: none; user-select: none; }
+html.cursor-hidden, html.cursor-hidden * { cursor: none !important; }
+
+/* viewport → fixed 1920×1080 stage, black letterbox. Nothing inside the stage is responsive. */
+.viewport { position: fixed; inset: 0; background: #000; overflow: hidden; }
+.stage {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0;
+  overflow: hidden; background: var(--bg); transition: background 400ms; contain: strict;
+}
+.stage.abs-black { background: #000; }
+.layer { position: absolute; inset: 0; pointer-events: none; }
+
+.mono { font-family: var(--font-mono); }
+
+/* blinking cursor — CSS, so no glyph fallback and no React re-render */
+.cursor { animation: blink 1.06s steps(1, end) infinite; }
+@keyframes blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+.capture .cursor { animation: none; }
+
+/* default chrome */
+.chrome { font-family: var(--font-mono); font-size: 20px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); transition: opacity 500ms; }
+.chrome-id { position: absolute; left: 72px; top: 40px; display: flex; gap: 14px; align-items: center; }
+.chrome-title { color: var(--ink-2); }
+.chrome-sep { color: var(--accent); }
+.chrome-ticks { position: absolute; left: 0; width: 1920px; top: 1026px; display: flex; justify-content: center; gap: 8px; }
+.chrome-ticks span { width: 28px; height: 2px; background: var(--hair-strong); transition: background 300ms; }
+.chrome-ticks span.done { background: var(--ink-3); }
+.chrome-ticks span.here { background: var(--accent); }

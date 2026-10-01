@@ -1,0 +1,55 @@
+/* Operator UI (overview, debug, presenter). Never part of the storytelling; it does not follow the deck theme. */
+.overview { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 10; padding: 48px 56px; overflow: auto; cursor: default; font-family: var(--font-mono); }
+.overview-head { color: rgba(255,255,255,.55); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 24px; }
+.overview-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 1px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.09); }
+.ov-scene { background: #0a0a0a; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.ov-scene.current { background: #161616; }
+.ov-scene button { all: unset; cursor: pointer; }
+.ov-title { display: flex; gap: 12px; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: #fff; }
+.ov-scene.done .ov-title { color: rgba(255,255,255,.55); }
+.ov-n { color: var(--op-accent); }
+.ov-beats { display: flex; flex-direction: column; gap: 2px; }
+.ov-beat { font-size: 13px; color: rgba(255,255,255,.6); padding: 3px 6px; }
+.ov-beat:hover, .ov-title:hover { color: #fff; background: #1c1c1c; }
+.ov-beat.here { color: #fff; background: var(--op-accent-strong); }
+.ov-bn { color: rgba(255,255,255,.35); }
+.ov-beat.here .ov-bn { color: #fff; }
+
+.debug { position: fixed; right: 12px; bottom: 12px; z-index: 11; width: 460px; background: rgba(10,10,10,.94); border: 1px solid rgba(255,255,255,.16); color: rgba(255,255,255,.8); font-size: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; cursor: default; user-select: text; }
+.debug b { color: var(--op-accent); }
+.debug-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.debug button, .debug select { background: #161616; color: #fff; border: 1px solid rgba(255,255,255,.2); font: inherit; padding: 3px 8px; cursor: pointer; }
+.debug pre { margin: 0; max-height: 280px; overflow: auto; font-size: 11px; color: rgba(255,255,255,.7); white-space: pre; }
+
+/* presenter window: a normal (responsive) operator screen */
+.presenter { position: fixed; inset: 0; background: #0a0a0a; color: #fff; overflow: auto; padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; user-select: none; font-family: var(--font-sans); }
+.presenter button { all: unset; cursor: pointer; }
+.p-head { display: flex; justify-content: space-between; gap: 16px; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+.p-ok { color: #27c93f; } .p-bad { color: #ff5f56; }
+.p-warn { border: 1px solid rgba(255,189,46,.5); color: #ffbd2e; padding: 10px 14px; font-size: 14px; }
+.p-main { display: grid; grid-template-columns: 1.4fr 1fr .8fr; gap: 1px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.09); }
+.p-main section { background: #111; padding: 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.p-label { font-size: 13px; letter-spacing: .12em; color: var(--op-accent); }
+.p-pos { font-size: 18px; color: rgba(255,255,255,.6); letter-spacing: .04em; }
+.p-beat { font-size: 54px; font-weight: 500; letter-spacing: -.03em; line-height: 1; }
+.p-nbeat { font-size: 36px; font-weight: 500; letter-spacing: -.02em; color: rgba(255,255,255,.8); }
+.p-auto { font-size: 16px; color: #ffbd2e; vertical-align: middle; }
+.p-source { font-size: 18px; color: rgba(255,255,255,.75); line-height: 1.4; }
+.p-source .mono { color: rgba(255,255,255,.4); font-size: 14px; margin-right: 8px; }
+.p-note { font-size: 17px; color: #ffbd2e; line-height: 1.4; }
+.p-clock { font-size: 56px; font-weight: 300; }
+.p-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.p-row button, .p-controls button { border: 1px solid rgba(255,255,255,.28); padding: 12px 18px; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; }
+.p-row button:hover, .p-controls button:hover { background: #fff; color: #0a0a0a; }
+.p-dim { color: rgba(255,255,255,.4); font-size: 13px; }
+.p-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+.p-controls .p-primary { border-left: 3px solid var(--op-accent-strong); padding: 18px 44px; font-size: 20px; }
+.p-scenes { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 1px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.09); }
+.p-scene { background: #0a0a0a; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.p-scene.here { background: #161616; }
+.p-sn { font-size: 13px; letter-spacing: .06em; color: rgba(255,255,255,.7); text-transform: uppercase; }
+.p-dots { display: flex; gap: 6px; flex-wrap: wrap; }
+.p-dots .p-dot { width: 22px; height: 8px; background: rgba(255,255,255,.14); }
+.p-dots .p-dot.done { background: rgba(255,255,255,.5); }
+.p-dots .p-dot.here { background: var(--op-accent); }
+.p-foot { font-size: 12px; color: rgba(255,255,255,.4); letter-spacing: .04em; }

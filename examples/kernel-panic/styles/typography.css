@@ -1,0 +1,7 @@
+/* v3 type roles */
+.t-statement { font-weight: 500; letter-spacing: -0.045em; line-height: 0.88; text-transform: uppercase; white-space: nowrap; }
+.t-editorial { font-weight: 500; letter-spacing: -0.045em; line-height: 0.94; }
+.t-numeral { font-weight: 300; letter-spacing: -0.03em; line-height: 0.8; font-variant-numeric: tabular-nums; }
+.t-system { font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.t-meta { font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.t-eyebrow { font-family: var(--font-mono); font-size: 26px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--violet-text); }

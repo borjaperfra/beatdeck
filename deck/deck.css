@@ -1,0 +1,4 @@
+/* Deck-specific motion. Ambient loops stop under reduced motion and in capture mode. */
+.flow { stroke-dasharray: 3 21; animation: flow 1.4s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -24; } }
+.reduced-motion .flow, .capture .flow { animation: none; }
