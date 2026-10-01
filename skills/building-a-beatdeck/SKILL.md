@@ -28,6 +28,7 @@ npm install
 `init` strips what belongs to the beatdeck repo, not to a talk (the Kernel Panic showcase and its non-MIT
 assets, plugin files, beatdeck's README), renames the package and writes title/author/lang/theme into the deck.
 Use `--theme light` when the room is bright or the talk is streamed. Run it once; it deletes itself.
+It also resets the demo's `qrUrl` to `TODO` and clears its tagline: set the real QR target only from the source.
 
 Then read `AGENTS.md` (repo rules) and skim `deck/` — the demo deck is the reference implementation of every
 pattern below. For a heavier reference, the beatdeck repo on GitHub has `examples/kernel-panic/`, a 47-beat

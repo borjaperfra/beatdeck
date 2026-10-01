@@ -15,9 +15,11 @@ function Open_() {
       </div>
 
       {/* 01.3 title */}
-      <Reveal on={title} x={168} y={318}>
-        <div className="t-eyebrow">// {config.subtitle}</div>
-      </Reveal>
+      {config.subtitle && (
+        <Reveal on={title} x={168} y={318}>
+          <div className="t-eyebrow">// {config.subtitle}</div>
+        </Reveal>
+      )}
       <Reveal on={title} x={150} y={400} delay={120} ms={1100}>
         <div className="t-statement" style={{ fontSize: 320 }}>
           {config.title}<span style={{ color: 'var(--accent)' }}>.</span>

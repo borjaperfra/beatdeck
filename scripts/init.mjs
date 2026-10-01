@@ -61,6 +61,11 @@ edit('AGENTS.md', (s) => s.replace(/^\| `examples\/kernel-panic\/`.*\n/m, '').re
 // 4 · the deck: title, author, lang, id, theme
 if (title) edit('deck/deck.config.ts', (s) => s.replace(/title: '[^']*'/, `title: '${esc(title)}'`));
 if (author) edit('deck/deck.config.ts', (s) => s.replace(/author: '[^']*'/, `author: '${esc(author)}'`));
+// the demo's own facts must not leak into a talk: no QR to the beatdeck repo, no beatdeck tagline
+edit('deck/deck.config.ts', (s) => s
+  .replace(/qrUrl: '[^']*'/, "qrUrl: 'TODO'")
+  .replace(/qrLabel: '[^']*'/, "qrLabel: ''")
+  .replace(/subtitle: '[^']*'/, "subtitle: ''"));
 edit('deck/index.tsx', (s) => {
   s = s.replace(/id: '[^']*'/, `id: '${name}'`);
   if (lang) s = s.replace(/lang: '[^']*'/, `lang: '${esc(lang)}'`);
@@ -90,4 +95,4 @@ The talk lives in \`deck/\`. See \`AGENTS.md\` and \`skills/building-a-beatdeck/
 `);
 
 rmSync(p('scripts/init.mjs'), { force: true });
-console.log(`✓ ${name}: clean talk project${title ? ` "${title}"` : ''}${theme === 'light' ? ', light theme' : ''}. Next: npm install && npm run dev`);
+console.log(`✓ ${name}: clean talk project${title ? ` "${title}"` : ''}${theme === 'light' ? ', light theme' : ''}. qrUrl is TODO in deck/deck.config.ts. Next: npm install && npm run dev`);
