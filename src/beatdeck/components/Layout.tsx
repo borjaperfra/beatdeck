@@ -1,16 +1,33 @@
 import { createContext, useContext } from 'react';
-import { usePos } from '../engine';
+import { useDeck, usePos } from '../engine';
 import { layerFade, swap } from './motion';
+
+/** How the deck reached the current beat: from an earlier beat, a later one, the same one, or a fresh page load. */
+export type Arrival = 'forward' | 'back' | 'same' | 'load';
 
 interface SceneCtx {
   here: boolean;
   b: number;
   entry: number;
+  dir: Arrival;
 }
 
-const Ctx = createContext<SceneCtx>({ here: false, b: -1, entry: 0 });
+const Ctx = createContext<SceneCtx>({ here: false, b: -1, entry: 0, dir: 'load' });
 
-/** The current scene's position, inside a `<Scene>`: `here`, the beat `b` (-1 when elsewhere) and `entry`. */
+/** How the current beat was reached. A fresh load renders the settled state (nothing to animate from). */
+export function useArrival(): Arrival {
+  return useDeck((st) => {
+    const f = st.from;
+    if (!f) return 'load';
+    if (f.scene === st.scene && f.beat === st.beat) return 'same';
+    return f.scene < st.scene || (f.scene === st.scene && f.beat < st.beat) ? 'forward' : 'back';
+  });
+}
+
+/**
+ * The current scene's position, inside a `<Scene>`: `here`, the beat `b` (-1 when elsewhere), `entry`, and `dir`
+ * (how the beat was reached — animate "only when arriving forward" with `dir === 'forward'`).
+ */
 export const useScene = () => useContext(Ctx);
 
 /**
@@ -19,9 +36,10 @@ export const useScene = () => useContext(Ctx);
  */
 export function Scene({ index, children, style }: { index: number; children: React.ReactNode; style?: React.CSSProperties }) {
   const p = usePos();
+  const dir = useArrival();
   const here = p.s === index;
   return (
-    <Ctx.Provider value={{ here, b: here ? p.b : -1, entry: p.entry }}>
+    <Ctx.Provider value={{ here, b: here ? p.b : -1, entry: p.entry, dir }}>
       <div className="layer" style={{ opacity: here ? 1 : 0, transition: layerFade(here), ...style }}>
         {children}
       </div>

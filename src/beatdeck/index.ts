@@ -23,6 +23,6 @@ export { useGlitch } from './components/useGlitch';
 export function defineDeck<L = Record<string, never>>(def: DeckDefinition<L>): DeckDefinition<L> {
   return def;
 }
-export { Scene, Reveal, useScene } from './components/Layout';
+export { Scene, Reveal, useScene, useArrival, type Arrival } from './components/Layout';
 export { Terminal, type TermLine, type TermMark } from './components/Terminal';
 export { NodeBox, Arrow, rectExit, type Rect, type NodeTone } from './components/Diagram';

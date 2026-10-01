@@ -53,7 +53,20 @@ export const Name = () => <Scene index={3}><Name_ /></Scene>;
   starts once the space is free (`IN_DELAY`) and settles slowly (`EASE`). `Reveal` and `swap()` do this.
 - Stagger with `delay` (100–400 ms), not with extra beats.
 - Draw lines with `pathLength={1}` + `strokeDashoffset` transitions; count numbers with `CountUp`.
-- Ambient motion (a float, a flow along edges) is CSS keyframes, disabled under `.capture` and `.reduced-motion`.
+- Ambient motion (a float, a flow along edges) is CSS keyframes. Nothing switches your own keyframes off for
+  you: add `.capture .x, .reduced-motion .x { animation: none; }` for each, or `verify` frames will differ.
+
+### Entry animations — pick the pattern by what should happen when the speaker goes back
+
+| Want | Pattern |
+| --- | --- |
+| Appears on beat k and stays; going back to k does not replay it (default) | cumulative condition: `on={here && b >= k}` with `Reveal` / CSS transitions |
+| Replays every time beat k is entered, from either side | restart on `entry`, gated: `<Typewriter run={here && b === k} entry={entry} …>`, `<CountUp from={0} entry={entry} …>` |
+| Animates only when arriving forward; arriving back or by URL shows the end state | `const { dir } = useScene()`; e.g. `<CountUp from={here && b === k && dir === 'forward' ? 0 : undefined} …>` or `transition: dir === 'forward' ? '…' : 'none'` |
+
+A fresh load (`dir === 'load'`, a refresh or `#s.b`) renders the settled frame with no animation: that is what
+makes reload safe on stage, and what `verify` compares. To see the motion itself, step into the beat in
+`npm run dev`.
 - Canvas 2D for many particles; SVG for diagrams; DOM for text. Keep per-frame React re-renders out of loops:
   write to refs/DOM directly or use a canvas.
 

@@ -52,7 +52,7 @@ interface TimelineHost<L> {
 | Export | Use |
 | --- | --- |
 | `Scene({ index })` | Scene layer: fades in only while the deck is in scene `index` (0-based). Provides `useScene()`. |
-| `useScene()` | `{ here, b, entry }` inside a `<Scene>`. `b` is -1 when the deck is elsewhere. |
+| `useScene()` | `{ here, b, entry, dir }` inside a `<Scene>`. `b` is -1 when the deck is elsewhere. `dir`: how the beat was reached — `forward` · `back` · `same` · `load` (also `useArrival()` outside a scene). |
 | `usePos()` | `{ s, b, entry }` — global position, for layers that span scenes. |
 | `useDeck(sel)` | Subscribe to a slice of `DeckState` (shallow-compared). Annotate `sel`'s parameter as `DeckState<Live>` to type `live`, or wrap it once: `export const useLive = <T,>(f: (s: DeckState<Live>) => T) => useDeck<T, Live>(f)`. |
 | `deck` | Imperative handle: `go`, `next`, `prev`, `home`, `end`, `getState`, `subscribe`, `scenes`, `label(pos)`. |
