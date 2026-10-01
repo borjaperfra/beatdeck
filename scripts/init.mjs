@@ -11,6 +11,7 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { forTalk, writeManifest } from './upgrade.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const p = (f) => resolve(root, f);
@@ -43,6 +44,7 @@ for (const f of ['examples', '.claude-plugin', 'docs/media', 'README.md']) rmSyn
 
 // 2 · package.json: own name, no example scripts, no init
 const pkg = JSON.parse(readFileSync(p('package.json'), 'utf8'));
+const beatdeckVersion = pkg.version;
 pkg.name = name;
 pkg.version = '0.1.0';
 pkg.description = title ?? 'A talk built with beatdeck';
@@ -54,9 +56,9 @@ writeFileSync(p('package.json'), JSON.stringify(pkg, null, 2) + '\n');
 edit('package-lock.json', (s) => s.replace(/("name":\s*)"beatdeck"/g, `$1"${name}"`));
 
 // 3 · tsconfig / licence / agent guide: no references to the showcase
-edit('tsconfig.json', (s) => s.replace(/,\s*"examples"/, ''));
+edit('tsconfig.json', (s) => forTalk('tsconfig.json', s));
 edit('LICENSE', (s) => s.replace(/\n\nThe MIT license covers[\s\S]*$/, '\n'));
-edit('AGENTS.md', (s) => s.replace(/^\| `examples\/kernel-panic\/`.*\n/m, '').replace(/^npm run example:kernel-panic\n/m, ''));
+edit('AGENTS.md', (s) => forTalk('AGENTS.md', s));
 
 // 4 · the deck: title, author, lang, id, theme
 if (title) edit('deck/deck.config.ts', (s) => s.replace(/title: '[^']*'/, `title: '${esc(title)}'`));
@@ -89,10 +91,12 @@ npm install
 npm run dev          # http://127.0.0.1:5173/#1.1
 npm run present      # production build, opened locally (works offline)
 npm run verify       # every beat checked → artifacts/verify/
+npm run upgrade      # bring the engine up to date (never touches deck/)
 \`\`\`
 
 The talk lives in \`deck/\`. See \`AGENTS.md\` and \`skills/building-a-beatdeck/SKILL.md\`.
 `);
 
 rmSync(p('scripts/init.mjs'), { force: true });
+writeManifest(root, beatdeckVersion, 'init'); // lets `npm run upgrade` tell your edits from beatdeck's files
 console.log(`✓ ${name}: clean talk project${title ? ` "${title}"` : ''}${theme === 'light' ? ', light theme' : ''}. qrUrl is TODO in deck/deck.config.ts. Next: npm install && npm run dev`);

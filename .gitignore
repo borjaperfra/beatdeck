@@ -4,3 +4,5 @@ dist-*/
 artifacts/
 *.tsbuildinfo
 .DS_Store
+.beatdeck-backup/
+*.beatdeck-new

@@ -37,7 +37,11 @@ https://github.com/borjaperfra/beatdeck/tree/main/examples/kernel-panic — a 47
 beat), `architecture/` (one SVG world spanning several scenes) and `simulation/` (a Canvas 2D particle layer).
 
 The talk lives in `deck/`. Never edit `src/beatdeck/` for one talk; if the engine truly lacks something, add it
-generically there and say so.
+generically there and say so (`npm run upgrade` replaces engine files; edits are backed up, not merged).
+
+**Existing talk project?** If `.beatdeck.json` exists, `npm run upgrade -- --dry-run` shows whether a newer engine
+is available; upgrade only when the user agrees, then `npm install && npm run verify`, and merge any
+`*.beatdeck-new` file it reports.
 
 ## 1 · Collect the source
 

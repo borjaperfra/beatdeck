@@ -80,6 +80,26 @@ Replace it with your talk.
 | `npm run shot -- 3 4.2` | quick frames of a few beats (a scene, a beat, a range) from the dev server → `artifacts/shot/`, with the same text/layout audit. |
 | `npm run verify` | every beat walked forwards, walked back and reloaded from its URL, frames pixel-compared, reduced motion, QR decoded, presenter + overview, contact sheet → `artifacts/verify/`. Fails on any mismatch, console error or remote request. Needs a local Chrome. |
 
+## Updating a talk
+
+The engine is copied into each talk, so a talk keeps working even if beatdeck changes. To take a newer version:
+
+```bash
+npm run upgrade                  # latest; or: npm run upgrade -- --ref v0.4.0   (--dry-run to preview)
+npm install && npm run verify
+```
+
+`upgrade` replaces the engine (`src/beatdeck/`, the skill, the scripts, the base themes), updates engine
+dependencies and adds new scripts. It never touches `deck/`, `index.html` or `docs/`. Engine files you edited
+are backed up to `.beatdeck-backup/`; shared config you edited (`vite.config.ts`, `tsconfig.json`, …) is left as
+is, with the new version beside it as `*.beatdeck-new`. `.beatdeck.json` records the version.
+
+Talks created before `upgrade` existed (≤ 0.3.0) bootstrap it once:
+
+```bash
+npx degit borjaperfra/beatdeck/scripts .beatdeck-tmp && node .beatdeck-tmp/upgrade.mjs && rm -rf .beatdeck-tmp
+```
+
 ## Keys
 
 → ↓ PageDown, click, Space (fullscreen) next · ← ↑ PageUp previous · 1–9 scene · Home / End ·
