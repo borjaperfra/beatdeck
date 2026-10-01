@@ -19,6 +19,9 @@ html.cursor-hidden, html.cursor-hidden * { cursor: none !important; }
 
 .mono { font-family: var(--font-mono); }
 
+/* `text-transform: uppercase` turns µ into a Greek capital Mu and ß into SS. Wrap units/words in .keep-case. */
+.keep-case { text-transform: none; }
+
 /* blinking cursor — CSS, so no glyph fallback and no React re-render */
 .cursor { animation: blink 1.06s steps(1, end) infinite; }
 @keyframes blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }

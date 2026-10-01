@@ -85,6 +85,41 @@ async function load(hash, query = 'capture=1') {
   }
 }
 
+/**
+ * DOM audit of the current frame (runs in the page). Looks only at text that is actually visible:
+ * effective opacity (own × ancestors) > 0.5 and inside the stage layer tree.
+ * Returns problems as strings.
+ */
+function auditFrame() {
+  const stage = document.querySelector('.stage');
+  if (!stage) return [];
+  const out = [];
+  const visible = (el) => {
+    let o = 1;
+    for (let e = el; e && e !== stage.parentElement; e = e.parentElement) {
+      const cs = getComputedStyle(e);
+      if (cs.visibility === 'hidden' || cs.display === 'none') return false;
+      o *= +cs.opacity;
+    }
+    return o > 0.5;
+  };
+  // elements that own visible text directly
+  const texts = [];
+  const walker = document.createTreeWalker(stage, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (!n.textContent.trim()) continue;
+    const el = n.parentElement;
+    if (!el || !visible(el)) continue;
+    if (!texts.includes(el)) texts.push(el);
+    // characters that change meaning under text-transform: uppercase (µ → Greek Μ, ß → SS)
+    if (/[µß]/.test(n.textContent) && getComputedStyle(el).textTransform === 'uppercase') {
+      out.push(`uppercase changes "${n.textContent.trim().slice(0, 40)}" (µ/ß): wrap the unit in <span className="keep-case">`);
+    }
+  }
+  return out;
+}
+const layout = [];
+
 // 1) forward walk
 await load('#1.1');
 await page.evaluate(() => localStorage.clear());
@@ -98,6 +133,7 @@ for (const [s, b] of all) {
   const ms = await settle();
   if (ms >= MAX_WAIT) slow.push(`${s}.${b}`);
   await page.screenshot({ path: `${OUT}/walk-${name(s, b)}.png` });
+  for (const issue of await page.evaluate(auditFrame)) layout.push(`${s}.${b} ${issue}`);
   const h = await hashOf();
   if (h !== `#${s}.${b}`) errors.push(`[walk] expected #${s}.${b}, got ${h}`);
 }
@@ -200,15 +236,17 @@ await cmp.setViewportSize({ width: cols * (w + 8) + 8, height: 600 });
 await cmp.setContent(`<style>body{margin:0;background:#222;font:14px ui-monospace,monospace;color:#bbb;display:grid;grid-template-columns:repeat(${cols},${w}px);gap:8px;padding:8px}figure{margin:0}img{width:${w}px;height:${h}px;display:block}figcaption{padding:4px 2px}</style>${cells}`);
 await cmp.screenshot({ path: `${OUT}/contact.png`, fullPage: true });
 
-const report = { beats: all.length, backPath: back.map((p) => p.join('.')), errors, remote, mismatches, qr: Object.fromEntries(decoded), slowToSettle: slow, presenterConnected: connected, seconds: Math.round((Date.now() - t0) / 1000) };
+const report = { beats: all.length, backPath: back.map((p) => p.join('.')), errors, remote, mismatches, layout, qr: Object.fromEntries(decoded), slowToSettle: slow, presenterConnected: connected, seconds: Math.round((Date.now() - t0) / 1000) };
 writeFileSync(`${OUT}/report.json`, JSON.stringify(report, null, 2));
 await browser.close();
 stop();
 
-const ok = !errors.length && !remote.length && !mismatches.length;
+const ok = !errors.length && !remote.length && !mismatches.length && !layout.length;
 console.log(`${ok ? '✓' : '✕'} verify · ${all.length} beats walked, ${back.length} walked back, ${all.length} reloaded from the URL · ${report.seconds}s`);
 console.log(`  frames identical (≤ ${DIFF}% px): ${mismatches.length ? `${mismatches.length} mismatch(es)` : 'yes'}`);
 mismatches.forEach((m) => console.log('    ' + m));
+console.log(`  text and layout: ${layout.length ? `${layout.length} problem(s)` : 'ok'}`);
+layout.forEach((m) => console.log('    ' + m));
 console.log(`  QR: ${qrUrl ? (decoded.size ? `decodes to ${qrUrl} on ${[...decoded.keys()].join(', ')}` : 'NOT FOUND') : 'not configured (qrUrl is TODO)'}`);
 console.log(`  console errors/warnings: ${errors.length} · remote requests: ${remote.length} · presenter: ${connected ? 'connected' : 'NOT connected'}`);
 errors.forEach((e) => console.log('    ' + e));

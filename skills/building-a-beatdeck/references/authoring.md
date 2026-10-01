@@ -43,6 +43,9 @@ export const Name = () => <Scene index={3}><Name_ /></Scene>;
   Nothing smaller than 18 px on stage — it must read from the back of the room.
 - `whiteSpace: 'nowrap'` on statements; break lines explicitly. Check widths in screenshots, not by eye.
 - One idea per beat on screen. If a beat needs a paragraph, it needs more beats.
+- Uppercase roles (`.t-meta`, `.t-eyebrow`, the chrome) apply `text-transform: uppercase`, which turns `µ` into a
+  Greek capital Mu (`38 µs` reads `38 ΜS`) and `ß` into `SS`. Wrap such units in `<span className="keep-case">`.
+  `npm run verify` fails on it.
 
 ## Motion
 
