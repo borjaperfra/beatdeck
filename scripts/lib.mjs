@@ -1,5 +1,24 @@
 // Shared by verify.mjs and shot.mjs.
 import { spawn } from 'node:child_process';
+import { chromium } from 'playwright-core';
+
+/**
+ * A headless Chromium-family browser: $BEATDECK_BROWSER (an executable path), else installed Chrome, else Edge,
+ * else Playwright's own Chromium (`npx playwright-core install chromium`).
+ */
+export async function launchBrowser() {
+  const args = ['--force-device-scale-factor=1'];
+  const tries = [
+    ...(process.env.BEATDECK_BROWSER ? [{ executablePath: process.env.BEATDECK_BROWSER }] : []),
+    { channel: 'chrome' }, { channel: 'msedge' }, {},
+  ];
+  for (const t of tries) {
+    try { return await chromium.launch({ headless: true, args, ...t }); } catch { /* next */ }
+  }
+  console.error('✕ no browser found for screenshots. Install Google Chrome, or run `npx playwright-core install chromium`,');
+  console.error('  or set BEATDECK_BROWSER to a Chromium/Chrome/Edge executable.');
+  process.exit(1);
+}
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const name = (s, b) => `${String(s).padStart(2, '0')}-${String(b).padStart(2, '0')}`;

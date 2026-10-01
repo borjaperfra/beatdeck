@@ -7,9 +7,8 @@
 //
 // Each beat is loaded straight from its URL (?capture=1), shot once it has settled, and audited
 // (the same text checks as `npm run verify`). For the full proof, run `npm run verify`.
-import { chromium } from 'playwright-core';
 import { mkdirSync } from 'node:fs';
-import { auditFrame, name, settle, startServer } from './lib.mjs';
+import { auditFrame, launchBrowser, name, settle, startServer } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const flag = (k) => args.find((a) => a.startsWith(`--${k}=`))?.split('=')[1];
@@ -23,7 +22,7 @@ mkdirSync(OUT, { recursive: true });
 
 const dist = flag('dist');
 const { base, stop } = await startServer(dist ? { dist, port: 4176 } : { dev: true, mode: flag('mode'), port: 4176 });
-const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--force-device-scale-factor=1'] });
+const browser = await launchBrowser();
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });

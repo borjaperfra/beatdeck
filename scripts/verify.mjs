@@ -18,11 +18,10 @@
 //          [--max-wait=8000]  per-beat settle timeout (ms)   [--min-wait=500]
 //          [--jobs=4]         pages loading beats from the URL in parallel
 //          [--source=<file>]  Terminal lines and [data-exact] text must appear verbatim in this file
-// Requires a local Chrome (playwright-core, channel "chrome").
-import { chromium } from 'playwright-core';
+// Needs a Chromium-family browser: Chrome, Edge, Playwright's Chromium, or $BEATDECK_BROWSER (see scripts/lib.mjs).
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { auditFrame, name, settle as settleOn, sleep, startServer } from './lib.mjs';
+import { auditFrame, launchBrowser, name, settle as settleOn, sleep, startServer } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const pos = args.filter((a) => !a.startsWith('--'));
@@ -41,7 +40,7 @@ mkdirSync(OUT, { recursive: true });
 const t0 = Date.now();
 
 const { base: BASE, stop } = await startServer({ dist: DIST });
-const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--force-device-scale-factor=1'] });
+const browser = await launchBrowser();
 const errors = [], remote = [];
 // one context per parallel worker: pages sharing a context get their animation frames throttled
 async function newContext() {

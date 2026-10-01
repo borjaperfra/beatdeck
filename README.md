@@ -78,7 +78,7 @@ Replace it with your talk.
 | `npm run build` | typecheck + bundle + offline check → `dist/` (self-contained, any static server) |
 | `npm run present` | build and open the production build locally |
 | `npm run shot -- 3 4.2` | quick frames of a few beats (a scene, a beat, a range) from the dev server → `artifacts/shot/`, with the same text/layout audit. |
-| `npm run verify` | every beat walked forwards, walked back and reloaded from its URL, frames pixel-compared, reduced motion, QR decoded, presenter + overview, contact sheet → `artifacts/verify/`. Fails on any mismatch, console error or remote request. Needs a local Chrome. |
+| `npm run verify` | every beat walked forwards, walked back and reloaded from its URL, frames pixel-compared, reduced motion, QR decoded, presenter + overview, contact sheet → `artifacts/verify/`. Fails on any mismatch, console error or remote request. Uses Chrome or Edge if installed, else Playwright's Chromium (`npx playwright-core install chromium`). |
 
 ## Updating a talk
 
