@@ -70,11 +70,12 @@ export const Idea = () => <Scene index={1}><Idea_ /></Scene>;
 ```
 
 Built in: `Reveal`, `Scene`, `CountUp`, `Typewriter`, `Terminal` (real commands and output, character-exact,
-with highlights and labels), `NodeBox` + `Arrow` (diagrams that draw themselves), `QR` (computed locally).
+with highlights and labels), `NodeBox` + `Arrow` (diagrams that draw themselves), `Plot` + `Zone` / `Series` /
+`Marker` / `PlotLabel` (charts), `QR` (computed locally).
 
-The demo in `deck/` (6 scenes, 22 beats) uses every pattern: an automatic boot, a strike-through, a diagram
-built node by node, terminal output with highlights, a self-counting number, and a locally generated QR code.
-Replace it with your talk.
+The demo in `deck/` (7 scenes, 24 beats) uses every pattern: an automatic boot, a strike-through, a diagram
+built node by node, terminal output with highlights, a chart, a self-counting number, and a locally generated
+QR code. A new talk starts from a blank two-scene deck instead (`init --demo` keeps this one).
 
 ## Commands
 

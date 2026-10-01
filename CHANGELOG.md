@@ -2,6 +2,16 @@
 
 Talk projects update with `npm run upgrade` (see README → Updating a talk).
 
+## 0.5.0
+- `init` starts from a **blank two-scene deck** (`--demo` keeps the demo), creates `reference/`,
+  `docs/CONTENT-AUDIT.md`, `docs/RUNBOOK.md`, the talk's own `AGENTS.md` and a verify workflow, and no longer
+  leaves beatdeck's changelog, CI or templates behind. `upgrade` manages the talk workflow, not `AGENTS.md`.
+- Charts: `Plot`, `Zone`, `Series`, `Marker`, `PlotLabel`, `usePlot`, `scaleLinear`. The demo charts real timings.
+- Exact text: `data-exact` compared as prose (Markdown markers and line breaks ignored), Terminal lines verbatim;
+  `shot --source`.
+- `shot` writes a contact sheet; `usePos().dir`; `useReached(scene, beat, until)`; `Reveal axis="x"`.
+- Fix: copies no longer use `fs.cpSync` (fails on Windows paths with non-ASCII characters in Node 24).
+
 ## 0.4.0
 - `npm run upgrade`: update a talk's engine without touching `deck/`; `.beatdeck.json` manifest written by `init`.
 - `verify` / `shot` find a browser: `$BEATDECK_BROWSER`, Chrome, Edge, or Playwright's Chromium.

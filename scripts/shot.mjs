@@ -3,13 +3,14 @@
 //   npm run shot -- 4.3 7.6        → artifacts/shot/04-03.png, artifacts/shot/07-06.png
 //   npm run shot -- 3              → every beat of scene 3
 //   npm run shot -- 2.1-2.4        → a range
+//   npm run shot -- 3 --source=reference/script.md   (+ the exact-text check, as in verify)
 //   npm run shot -- 4.3 --mode=kernel-panic   (an example, beatdeck repo only)   --dist=dist (a build instead of the dev server)
 //
 // Each beat is loaded straight from its URL (?capture=1), shot once it has settled, and audited
-// (the same text checks as `npm run verify`). For the full proof, run `npm run verify`.
-import { mkdirSync } from 'node:fs';
-import { readFileSync } from 'node:fs';
-import { auditFrame, launchBrowser, missingFromSource, name, settle, startServer } from './lib.mjs';
+// (the same text checks as `npm run verify`). With more than one beat it also writes <out>/contact.png.
+// For the full proof, run `npm run verify`.
+import { mkdirSync, readFileSync } from 'node:fs';
+import { auditFrame, contactSheet, launchBrowser, missingFromSource, name, settle, startServer } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const flag = (k) => args.find((a) => a.startsWith(`--${k}=`))?.split('=')[1];
@@ -53,6 +54,7 @@ for (const spec of specs) {
 }
 
 let problems = 0;
+const shots = [];
 for (const [s, b] of wanted) {
   await page.goto('about:blank');
   await page.goto(`${base}?capture=1#${s}.${b}`);
@@ -60,6 +62,7 @@ for (const [s, b] of wanted) {
   await settle(page);
   const file = `${OUT}/${name(s, b)}.png`;
   await page.screenshot({ path: file });
+  shots.push({ file, label: `${s}.${b}` });
   const { errors: found, warnings, exact } = await page.evaluate(auditFrame);
   const issues = [...found, ...(sourceText ? missingFromSource(exact, sourceText).map((e) => `${JSON.stringify(e.t)} is not in ${SOURCE}`) : [])];
   problems += issues.length;
@@ -68,6 +71,10 @@ for (const [s, b] of wanted) {
   warnings.forEach((w) => console.log('    (warning) ' + w));
 }
 errors.forEach((e) => console.log('  [error] ' + e));
+if (shots.length > 1) {
+  await contactSheet(await browser.newPage(), shots, `${OUT}/contact.png`);
+  console.log(`  contact sheet → ${OUT}/contact.png`);
+}
 await browser.close();
 stop();
 process.exit(errors.length || problems ? 1 : 0);

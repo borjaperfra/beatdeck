@@ -3,7 +3,7 @@ import { Marker, Plot, Reveal, Scene, useScene } from 'beatdeck';
 /** Real `npm run verify` timings, measured on one laptop. */
 const RUNS: { name: string; beats: number; seconds: number }[] = [
   { name: 'blank starter', beats: 3, seconds: 15 },
-  { name: 'this demo', beats: 22, seconds: 132 },
+  { name: 'this demo', beats: 24, seconds: 144 },
   { name: 'Kernel Panic', beats: 47, seconds: 328 },
 ];
 

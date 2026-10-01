@@ -133,6 +133,19 @@ export function auditFrame() {
   return res;
 }
 
+/**
+ * Render a contact sheet of frames (`[{ file, label }]`) into `out` using `page` (any blank page).
+ * Four 480×270 thumbnails per row, labelled.
+ */
+export async function contactSheet(page, frames, out) {
+  const { readFileSync } = await import('node:fs');
+  const cols = 4, w = 480, h = 270;
+  const cells = frames.map(({ file, label }) => `<figure><img src="data:image/png;base64,${readFileSync(file).toString('base64')}"><figcaption>${label}</figcaption></figure>`).join('');
+  await page.setViewportSize({ width: cols * (w + 8) + 8, height: 600 });
+  await page.setContent(`<style>body{margin:0;background:#222;font:14px ui-monospace,monospace;color:#bbb;display:grid;grid-template-columns:repeat(${cols},${w}px);gap:8px;padding:8px}figure{margin:0}img{width:${w}px;height:${h}px;display:block}figcaption{padding:4px 2px}</style>${cells}`);
+  await page.screenshot({ path: out, fullPage: true });
+}
+
 /** Source text as prose: Markdown markers removed (quotes, bullets, headings, **bold**, `code`), whitespace collapsed. */
 export function proseOf(md) {
   return md.replace(/\r/g, '').split('\n')

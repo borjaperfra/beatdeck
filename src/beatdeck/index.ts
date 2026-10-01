@@ -6,7 +6,7 @@ import type { DeckDefinition } from './types';
 
 export type { Position, BeatDef, SceneDef, DeckState, DeckDefinition, TimelineHost } from './types';
 export { mount } from './mount';
-export { deck, useDeck, usePos, useHere, DeckEngine } from './engine';
+export { deck, useDeck, usePos, useHere, useReached, reached, arrivalOf, DeckEngine, type Arrival } from './engine';
 export { flags, reducedMotion } from './flags';
 export { glitch, rng, type GlitchState } from './fx/glitch';
 export { debugStats } from './debugStats';
@@ -23,7 +23,7 @@ export { useGlitch } from './components/useGlitch';
 export function defineDeck<L = Record<string, never>>(def: DeckDefinition<L>): DeckDefinition<L> {
   return def;
 }
-export { Scene, Reveal, useScene, useArrival, type Arrival } from './components/Layout';
+export { Scene, Reveal, useScene, useArrival } from './components/Layout';
 export { Terminal, type TermLine, type TermMark } from './components/Terminal';
 export { NodeBox, Arrow, rectExit, type Rect, type NodeTone } from './components/Diagram';
 export { Plot, Zone, Series, Marker, PlotLabel, usePlot, scaleLinear, type Axis, type ChartTone } from './components/Chart';

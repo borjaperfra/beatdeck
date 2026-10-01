@@ -21,7 +21,7 @@
 // Needs a Chromium-family browser: Chrome, Edge, Playwright's Chromium, or $BEATDECK_BROWSER (see scripts/lib.mjs).
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { auditFrame, launchBrowser, missingFromSource, name, settle as settleOn, sleep, startServer } from './lib.mjs';
+import { auditFrame, contactSheet, launchBrowser, missingFromSource, name, settle as settleOn, sleep, startServer } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const pos = args.filter((a) => !a.startsWith('--'));
@@ -197,11 +197,7 @@ await page.screenshot({ path: `${OUT}/overview.png` });
 await page.keyboard.press('Escape');
 
 // 8) contact sheet
-const cols = 4, w = 480, h = 270;
-const cells = all.map(([s, b]) => `<figure><img src="${b64(`${OUT}/walk-${name(s, b)}.png`)}"><figcaption>${s}.${b}${beats[s - 1][b - 1] ? ' · auto' : ''}</figcaption></figure>`).join('');
-await cmp.setViewportSize({ width: cols * (w + 8) + 8, height: 600 });
-await cmp.setContent(`<style>body{margin:0;background:#222;font:14px ui-monospace,monospace;color:#bbb;display:grid;grid-template-columns:repeat(${cols},${w}px);gap:8px;padding:8px}figure{margin:0}img{width:${w}px;height:${h}px;display:block}figcaption{padding:4px 2px}</style>${cells}`);
-await cmp.screenshot({ path: `${OUT}/contact.png`, fullPage: true });
+await contactSheet(cmp, all.map(([s, b]) => ({ file: `${OUT}/walk-${name(s, b)}.png`, label: `${s}.${b}${beats[s - 1][b - 1] ? ' · auto' : ''}` })), `${OUT}/contact.png`);
 
 // exact text: every Terminal line / [data-exact] element must appear verbatim in the source
 const notInSource = [];

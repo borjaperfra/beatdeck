@@ -196,8 +196,29 @@ export function useDeck<T, L = never>(selector: (s: DeckState<L>) => T): T {
   return useSyncExternalStore(deck.subscribe, get, get);
 }
 
-/** Most scene layers need scene + beat + entry. */
-export const usePos = () => useDeck((s) => ({ s: s.scene, b: s.beat, entry: s.entry }));
+/** How the deck reached the current beat: from an earlier beat, a later one, the same one, or a fresh page load. */
+export type Arrival = 'forward' | 'back' | 'same' | 'load';
+
+export function arrivalOf(st: DeckState<unknown>): Arrival {
+  const f = st.from;
+  if (!f) return 'load';
+  if (f.scene === st.scene && f.beat === st.beat) return 'same';
+  return f.scene < st.scene || (f.scene === st.scene && f.beat < st.beat) ? 'forward' : 'back';
+}
+
+/** True when `pos` is at or after (scene, beat) — 0-based, like everything internal. */
+export const reached = (pos: Position, scene: number, beat = 0) => pos.scene > scene || (pos.scene === scene && pos.beat >= beat);
+
+/** Global position for layers that span scenes: scene `s`, beat `b`, `entry`, and `dir` (how it was reached). */
+export const usePos = () => useDeck((st: DeckState<unknown>) => ({ s: st.scene, b: st.beat, entry: st.entry, dir: arrivalOf(st) }));
+
+/**
+ * For layers that span scenes: true from (scene, beat) on — and, with `until`, only before that position.
+ * `useReached(2, 1)` = "from the 2nd beat of the 3rd scene"; `useReached(2, 0, [5, 0])` = "scenes 3–5".
+ */
+export function useReached(scene: number, beat = 0, until?: [number, number]): boolean {
+  return useDeck((st: DeckState<unknown>) => reached(st, scene, beat) && (!until || !reached(st, until[0], until[1])));
+}
 
 /** True while the current position is inside `scene` (0-based), optionally within a beat range. */
 export function useHere(scene: number) {

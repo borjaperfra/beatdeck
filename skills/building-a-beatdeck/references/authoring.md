@@ -33,8 +33,9 @@ export const Name = () => <Scene index={3}><Name_ /></Scene>;
 - Derive every visual from `here`, `b`, `live`. No `useState` for story state; no timers outside `timeline.ts`
   except purely cosmetic loops (CSS animations that `.capture` and `.reduced-motion` switch off).
 - `entry` restarts local animations (`CountUp`, `Typewriter`, a GSAP tween in `useLayoutEffect`) on each entry.
-- Layers that span scenes (a particle field, an architecture diagram that persists from scene 5 to 7) use
-  `usePos()` instead of `<Scene>` and decide per scene what to show. Put them first in `Stage`.
+- Layers that span scenes (a particle field, an architecture diagram that persists from scene 5 to 7, a chart
+  that stays on screen while three scenes talk about it) use `usePos()` / `useReached(scene, beat, until)`
+  instead of `<Scene>`, and decide per position what to show. Put them first in `Stage`.
 
 ## Layout on the stage
 

@@ -64,6 +64,10 @@ target URL, real screenshots/logos/photos. Put originals in `reference/` (read-o
     `data-exact` element — see step 6), never retyped from memory;
   - **stage directions** ("on screen…", "show how it grows…") → instructions for you, not text to display.
 
+**Nobody to ask?** If you are working without the speaker, decide, record each decision in the audit's
+"Decisions taken on the speaker's behalf", and list them in your hand-off. Keep the neutral theme and its
+accent unless a brand is given — choosing a palette is an art direction, not a default.
+
 Real artefacts beat redraws: if the source shows a tweet, a logo, a product photo or a meme, use the real file.
 Never invent quotes, numbers, tweet text, URLs or logos. Missing facts become explicit `TODO`s and questions.
 
@@ -132,7 +136,8 @@ export const Idea = () => <Scene index={1}><Idea_ /></Scene>;
 - `entry` increments on **every** beat change anywhere in the deck. Use it to restart a local animation, and
   gate the animation with `here && b === k` so always-mounted components do not replay invisibly.
 - Built-ins before custom code: `Terminal` for commands and output (character-exact, with marks and labels),
-  `NodeBox` + `Arrow` for diagrams, `CountUp`, `Typewriter`, `QR`. Build your own only when these cannot do it,
+  `NodeBox` + `Arrow` for diagrams, `Plot` + `Zone` / `Series` / `Marker` / `PlotLabel` for charts, `CountUp`,
+  `Typewriter`, `QR`. Build your own only when these cannot do it,
   and if it is generic, propose it for the engine.
 - Text that must be exact (terminal output, quotes, code) lives in one module (e.g. `deck/terminal.ts`) copied
   character for character from the source; scenes import it, never retype it.

@@ -1,9 +1,8 @@
 import { createContext, useContext } from 'react';
-import { useDeck, usePos } from '../engine';
+import { arrivalOf, useDeck, usePos, type Arrival } from '../engine';
+import type { DeckState } from '../types';
 import { layerFade, swap } from './motion';
 
-/** How the deck reached the current beat: from an earlier beat, a later one, the same one, or a fresh page load. */
-export type Arrival = 'forward' | 'back' | 'same' | 'load';
 
 interface SceneCtx {
   here: boolean;
@@ -16,12 +15,7 @@ const Ctx = createContext<SceneCtx>({ here: false, b: -1, entry: 0, dir: 'load' 
 
 /** How the current beat was reached. A fresh load renders the settled state (nothing to animate from). */
 export function useArrival(): Arrival {
-  return useDeck((st) => {
-    const f = st.from;
-    if (!f) return 'load';
-    if (f.scene === st.scene && f.beat === st.beat) return 'same';
-    return f.scene < st.scene || (f.scene === st.scene && f.beat < st.beat) ? 'forward' : 'back';
-  });
+  return useDeck((st: DeckState<unknown>) => arrivalOf(st));
 }
 
 /**
@@ -51,17 +45,19 @@ export function Scene({ index, children, style }: { index: number; children: Rea
  * An element that belongs to some beats. `on` shows it; when it hides, it leaves upwards if `out` (the story
  * moved past it) or downwards otherwise (we went back). Absolutely positioned at x/y on the 1920×1080 stage.
  */
-export function Reveal({ on, out = false, x, y, delay = 0, ms = 900, rise = 30, style, className, children }: {
+export function Reveal({ on, out = false, x, y, delay = 0, ms = 900, rise = 30, axis = 'y', style, className, children }: {
   on: boolean; out?: boolean; x?: number; y?: number; delay?: number; ms?: number; rise?: number;
+  /** 'y' (default) rises in and leaves upwards; 'x' slides in from the right and leaves to the left. */
+  axis?: 'x' | 'y';
   style?: React.CSSProperties; className?: string; children: React.ReactNode;
 }) {
-  const dy = on ? 0 : out ? -rise : rise;
+  const d = on ? 0 : out ? -rise : rise;
   return (
     <div
       className={className}
       style={{
         position: x != null || y != null ? 'absolute' : undefined, left: x, top: y,
-        opacity: on ? 1 : 0, transform: `translateY(${dy}px)`, transition: swap(on, ms, delay), ...style,
+        opacity: on ? 1 : 0, transform: axis === 'x' ? `translateX(${d}px)` : `translateY(${d}px)`, transition: swap(on, ms, delay), ...style,
       }}
     >
       {children}
