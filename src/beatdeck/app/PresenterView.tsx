@@ -23,7 +23,8 @@ function BeatInfo({ bt }: { bt: BeatDef }) {
 
 /** Separate window (P). Mirrors the stage over BroadcastChannel and sends it commands. Never shown to the audience. */
 export function PresenterView() {
-  const ch = useMemo(() => openChannel(), []);
+  // opened per effect run: StrictMode (dev) runs effects twice, and a channel closed by the first cleanup throws on send
+  const [ch, setCh] = useState<BroadcastChannel | null>(null);
   const id = deck.def.id;
   const [pos, setPos] = useState<Position | null>(null);
   const [lastSeen, setLastSeen] = useState(0);
@@ -33,8 +34,9 @@ export function PresenterView() {
   const [t0, setT0] = useState<number | null>(getTimerStart(id));
 
   useEffect(() => {
-    if (!ch) return;
-    ch.onmessage = (e: MessageEvent<Msg>) => {
+    const c = openChannel();
+    if (!c) return;
+    c.onmessage = (e: MessageEvent<Msg>) => {
       const m = e.data;
       if (m.type === 'state') {
         setPos({ scene: m.scene, beat: m.beat });
@@ -43,9 +45,10 @@ export function PresenterView() {
         setLastSeen(Date.now());
       }
     };
-    ch.postMessage({ type: 'hello' } satisfies Msg);
-    return () => ch.close();
-  }, [ch]);
+    c.postMessage({ type: 'hello' } satisfies Msg);
+    setCh(c);
+    return () => { c.close(); setCh(null); };
+  }, []);
 
   useEffect(() => {
     const i = setInterval(() => { setNow(Date.now()); setT0(getTimerStart(id)); }, 500);
