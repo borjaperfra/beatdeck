@@ -9,6 +9,7 @@ Run before saying a deck (or a change to it) is done.
       every beat reached forwards (PageDown), backwards (PageUp, following `prev`) and straight from `#s.b`
       renders the same frame (pixel diff ≤ `--diff`, default 0.1%) · positions match · no console error or
       warning · no request to a non-local host · `?reduced=1` applies · the QR on stage decodes to `qrUrl`
+      (or to the beat's own `qr`)
       · the presenter connects and drives the stage · the overview opens · no visible text outside the stage or
       overlapping other text · no µ/ß broken by uppercase.
 - [ ] With a written source: `npm run verify -- --source=<script>` — Terminal lines and `data-exact` text appear

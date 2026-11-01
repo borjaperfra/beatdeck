@@ -5,7 +5,7 @@
 //   3. every beat loaded straight from its URL hash        → <out>/direct-SS-BB.png
 //   4. walk and back frames pixel-compared with direct     → a beat that differs is not reconstructable from state
 //   5. ?reduced=1 applies and renders without errors
-//   6. the closing QR decodes to deck qrUrl (if configured)
+//   6. the closing QR decodes to deck qrUrl (if configured); a beat's own QR to its `qr`
 //   7. presenter window connects and drives the stage; overview opens
 //   8. contact sheet of every beat                         → <out>/contact.png
 // Fails on console errors/warnings, page errors, wrong positions, frame mismatches, a QR that does not scan,
@@ -80,7 +80,8 @@ const layout = [], warnings = new Set(), exact = new Map();
 await load('#1.1');
 await page.evaluate(() => localStorage.clear());
 await load('#1.1');
-const { beats, qrUrl, tolerance } = await page.evaluate(() => ({ beats: window.__beatdeck.beats, qrUrl: window.__beatdeck.qrUrl, tolerance: window.__beatdeck.tolerance }));
+const { beats, qrUrl, qr, tolerance } = await page.evaluate(() => ({ beats: window.__beatdeck.beats, qrUrl: window.__beatdeck.qrUrl, qr: window.__beatdeck.qr, tolerance: window.__beatdeck.tolerance }));
+const ownQr = (s, b) => qr?.[s - 1]?.[b - 1] ?? null;
 const tol = (s, b) => tolerance?.[s - 1]?.[b - 1] ?? DIFF;
 const all = beats.flatMap((bs, s) => bs.map((_, b) => [s + 1, b + 1]));
 const slow = [];
@@ -159,9 +160,9 @@ await load(`#${ls}.${lb}`, 'capture=1&reduced=1');
 await settle();
 if (!(await page.evaluate(() => document.documentElement.classList.contains('reduced-motion')))) errors.push('[reduced] ?reduced=1 did not apply .reduced-motion');
 
-// 6) QR: decode every walk frame, the configured URL must be found and nothing else
+// 6) QR: decode every walk frame. A beat with its own `qr` must show that one; any other QR must be qrUrl, found somewhere
 const decoded = new Map();
-if (qrUrl) {
+if (qrUrl || all.some(([s, b]) => ownQr(s, b))) {
   await cmp.addScriptTag({ path: JSQR });
   for (const [s, b] of all) {
     const text = await cmp.evaluate(async (u) => {
@@ -173,8 +174,12 @@ if (qrUrl) {
     }, b64(`${OUT}/walk-${name(s, b)}.png`));
     if (text) decoded.set(`${s}.${b}`, text);
   }
-  if (!decoded.size) errors.push(`[qr] qrUrl is ${qrUrl} but no frame has a QR that decodes`);
-  for (const [p, t] of decoded) if (t !== qrUrl) errors.push(`[qr] ${p} decodes to ${t}, expected ${qrUrl}`);
+  if (qrUrl && ![...decoded.values()].includes(qrUrl)) errors.push(`[qr] qrUrl is ${qrUrl} but no frame has a QR that decodes to it`);
+  for (const [s, b] of all) {
+    const p = `${s}.${b}`, own = ownQr(s, b), t = decoded.get(p);
+    if (own && t !== own) errors.push(`[qr] ${p} declares qr ${own} but ${t ? `decodes to ${t}` : 'no QR decodes'}`);
+    else if (!own && t && t !== qrUrl) errors.push(`[qr] ${p} decodes to ${t}, expected ${qrUrl ?? 'no QR (qrUrl is TODO)'}`);
+  }
 }
 
 // 7) presenter + overview
@@ -221,7 +226,9 @@ layout.forEach((m) => console.log('    ' + m));
 console.log(`  exact text: ${SOURCE ? (notInSource.length ? `${notInSource.length} line(s) not in the source` : `${exact.size} line(s) match ${SOURCE}`) : `${exact.size} line(s) on stage, not checked (pass --source=<script>)`}`);
 notInSource.forEach((m) => console.log('    ' + m));
 if (warnings.size) { console.log(`  warnings (not failing): ${warnings.size}`); [...warnings].slice(0, 12).forEach((w) => console.log('    ' + w)); if (warnings.size > 12) console.log(`    … see report.json`); }
-console.log(`  QR: ${qrUrl ? (decoded.size ? `decodes to ${qrUrl} on ${[...decoded.keys()].join(', ')}` : 'NOT FOUND') : 'not configured (qrUrl is TODO)'}`);
+const atQrUrl = [...decoded].filter(([, t]) => t === qrUrl).map(([p]) => p);
+const ownQrs = [...decoded].filter(([, t]) => t !== qrUrl).map(([p, t]) => `${p} → ${t}`);
+console.log(`  QR: ${qrUrl ? (atQrUrl.length ? `decodes to ${qrUrl} on ${atQrUrl.join(', ')}` : 'NOT FOUND') : 'not configured (qrUrl is TODO)'}${ownQrs.length ? ` · own: ${ownQrs.join(', ')}` : ''}`);
 console.log(`  console errors/warnings: ${errors.length} · remote requests: ${remote.length} · presenter: ${connected ? 'connected' : 'NOT connected'}`);
 errors.forEach((e) => console.log('    ' + e));
 remote.forEach((u) => console.log('    remote: ' + u));

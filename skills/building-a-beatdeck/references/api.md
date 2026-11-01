@@ -35,7 +35,8 @@ removes `examples/` from a talk project).
 ```ts
 interface SceneDef { id: string; title: string; beats: BeatDef[] }
 interface BeatDef  { name: string; auto?: boolean; ref?: string; source?: string; note?: string;
-                     tolerance?: number }   // verify: % px allowed to differ (random/live layers only)
+                     tolerance?: number     // verify: % px allowed to differ (random/live layers only)
+                     qr?: string }          // verify: this beat's QR encodes this URL instead of qrUrl (a demo's repo…)
 interface Position { scene: number; beat: number }            // 0-based
 interface DeckState<L> extends Position { live: L; entry: number; from: Position | null; blackout: boolean }
 interface TimelineHost<L> {
