@@ -51,6 +51,7 @@ export function App({ def }: { def: DeckDefinition<any> }) {
         beats: deck.scenes.map((s) => s.beats.map((b) => !!b.auto)),
         tolerance: deck.scenes.map((s) => s.beats.map((b) => b.tolerance ?? null)),
         qrUrl: qrConfigured(def.qrUrl) ? def.qrUrl : null,
+        qr: deck.scenes.map((s) => s.beats.map((b) => b.qr ?? null)),
         /** true while any GSAP tween or finite CSS animation/transition is still running */
         busy: () =>
           gsap.globalTimeline.getChildren(true, true, true).some((t) => t.isActive()) ||

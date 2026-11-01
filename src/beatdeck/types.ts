@@ -22,6 +22,11 @@ export interface BeatDef {
    * Only for beats with intentionally random or live layers (particles, dithering, clocks). Default: --diff.
    */
   tolerance?: number;
+  /**
+   * `npm run verify`: the URL a QR on this beat encodes when it is not the deck's `qrUrl` (e.g. a demo's repo or
+   * post). That beat's QR must decode to it; a QR on any other beat must decode to `qrUrl`.
+   */
+  qr?: string;
 }
 
 export interface SceneDef {
